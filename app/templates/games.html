@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block app_content %}
+    {% for game in games %}
+
+        <p> Game id - {{game.id}}  </p>
+        <p> Current period - {{game.current_period}}  </p>
+
+        {% for player in game.players %}
+            <a href="/game/{{game.id}}/user/{{player.id}}">
+                View Game for <strong>player id: {{player.id}} Team: {{player.username}}</strong>
+            </a>
+            <hr>
+        {% endfor %}
+
+    {% endfor %}
+{% endblock %}

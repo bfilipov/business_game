@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block app_content %}
+    <p>ADMIN EDIT PAGE</p>
+
+    <p> Game id - {{game.id}}  </p>
+    <p> Current period - {{game.current_period}}  </p>
+    <hr>
+    {% for player in game.players %}
+        <p>{{player}}</p>
+        <hr>
+        {% for period in player.periods %}
+            <p>User periods:</p>
+            <p>{{period}}</p>
+
+            <p>in_stock_product_A: {{period.in_stock_product_A}}</p>
+            <p>in_stock_product_B: {{period.in_stock_product_B}}</p>
+            <p>in_stock_product_C: {{period.in_stock_product_C}}</p>
+
+            <p>product_A_produced: {{period.product_A_produced}}</p>
+            <p>product_B_produced: {{period.product_B_produced}}</p>
+            <p>product_C_produced: {{period.product_C_produced}}</p>
+
+            <p>product_A_sold: {{period.product_A_sold}}</p>
+            <p>product_B_sold: {{period.product_B_sold}}</p>
+            <p>product_C_sold: {{period.product_C_sold}}</p>
+            <hr>
+            <hr>
+
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

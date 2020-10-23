@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+{% block app_content %}
+
+    {% if current_user.is_admin %}
+        <h3>Review data for <strong>Game: {{user.game_id}}</strong> <strong>User: {{user.id}}</strong> <strong>Period:{{period.period_number}}</strong></h3>
+    {% else %}
+        <p>Team: {{user.username}}</p>
+        <p>USER ID : {{user.id}}</p>
+        {% for period in user.periods%}
+            <p>period ID: {{period.id}}</p>
+            <p>period N: {{period.period_number}}</p>
+            <p>product_A_sold: {{period.product_A_sold}}</p>
+            <p>product_B_sold: {{period.product_B_sold}}</p>
+            <p>product_C_sold: {{period.product_C_sold}}</p>
+            <hr>
+        {% endfor %}
+        <hr>
+        <p>Current Period: {{current_period}} </p>
+        <p>stock A: {{user.product_A_count}} </p>
+        <p>stock B: {{user.product_B_count}} </p>
+        <p>stock C: {{user.product_C_count}} </p>
+        <p>Money: {{user.money}} </p>
+        <hr>
+        <h3>Submit data for current period</h3>
+    {% endif %}
+
+
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+
+{% endblock %}
