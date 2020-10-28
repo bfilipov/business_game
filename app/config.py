@@ -3,6 +3,7 @@ import os
 
 class Config:
     FLASK_APP = 'game.py'
+    FLASK_ENV = 'development'
     SECRET_KEY = os.environ.get('FLASK_APP_SECRET_KEY') or 'super-secret-key-that-you-will-never-guess'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -5,8 +5,8 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, PeriodForm, ReviewPeriodForm
-from app.models import User, Game, Period, Demand
+from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm
+from app.models import User, Game, Period, Demand, Userinput, Product
 
 
 def admin_required(func):
@@ -81,7 +81,11 @@ def register():
 def get_game(players_limit_per_game=4):
     games = [g for g in Game.query.filter_by(is_active=True).all()
              if len(g.players.all()) < players_limit_per_game]
-    return games[0] if games else Game()
+    return games[0] if games else create_game()
+
+
+def create_game():
+    return Game()
 
 
 @app.route('/user/<username>')
@@ -104,7 +108,7 @@ def games():
     return render_template('games.html', games=games, periods=periods)
 
 
-@app.route('/current_period', methods=['GET', 'POST'])
+@app.route('/current_period')
 @login_required
 def current_period():
     user = current_user
@@ -113,21 +117,37 @@ def current_period():
         flash(f'Your team is currently not participating in the game. '
               f'Please contact administrator.')
         return redirect(url_for('index'))
+    return render_template('current_period.html', user=user,
+                           current_period=game.current_period)
 
-    form = PeriodForm()
+
+@app.route('/current_period/<product>', methods=['GET', 'POST'])
+@login_required
+def current_period_product(product):
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first()
+    if not game:
+        flash(f'Your team is currently not participating in the game. '
+              f'Please contact administrator.')
+        return redirect(url_for('index'))
+
+    product = Product.query.filter_by(id=product).first_or_404()
+    period_id = f'{game.id}_{user.id}_{game.current_period}'
+    period = Period.query.filter_by(id=period_id).first()
+    userinput = get_or_create(db.session, Userinput, id=f'{period.id}_{product.id}')
+
+    form = UserInputForm(obj=userinput)
     if form.validate_on_submit():
-        period_id = f'{game.id}_{user.id}_{game.current_period}'
-        period = Period.query.filter_by(id=period_id).first() or \
-            Period(id=period_id, user_id=user.id, game_id=game.id, period_number=game.current_period)
 
-        form.populate_obj(period)
+        form.populate_obj(userinput)
+        userinput.product_id = product.id
 
-        db.session.add(period)
+        db.session.add(userinput)
         db.session.commit()
         flash(f'Successfully submitted form!')
 
-    return render_template('current_period.html', user=user,
-                           current_period=game.current_period, form=form)
+    return render_template('current_period_product.html', user=user,
+                           current_period=game.current_period, form=form, product=product)
 
 
 @app.route('/game/<game>/user/<user>', methods=['GET', 'POST'])
@@ -141,23 +161,89 @@ def game_period_review(game, user):
 
     period_id = f'{game.id}_{user.id}_{period_n}'
 
-    #todo init new period properly
-
-    period = Period.query.filter_by(id=period_id).first() or Period()
-
-    form = ReviewPeriodForm(obj=period)
+    period = Period.query.filter_by(id=period_id).first()
+    form = UserInputForm(obj=period)
 
     if form.validate_on_submit():
         form.populate_obj(period)
-
-        if all([game.players[i].periods.filter_by(period_number=period_n).first().approved
-                for i in range(len(game.players.all()))]):
-            game.current_period += 1
-            db.session.add(game)
-
         db.session.add(period)
+
+        players_periods = [game.players[i].periods.filter_by(period_number=period_n).first()
+                           for i in range(len(game.players.all()))]
+
+        if all([i.approved for i in players_periods]):
+            calculate_period_results(game, players_periods)
+
         db.session.commit()
         flash(f'Successfully updated form! {form.data}')
 
     return render_template('current_period.html', period=period, user=user, form=form)
 
+
+def calculate_period_results(game, players_periods):
+
+    max_price = 10
+
+    percentages = {
+        1: 40,
+        2: 30,
+        3: 20,
+        4: 10
+    }
+
+    current_demand = Demand.query.filter_by(demand_scenario_id=game.demand_scenario_id,
+                                            period=game.current_period).first()
+
+    demand_a = current_demand.demand_A
+    demand_b = current_demand.demand_B
+    demand_c = current_demand.demand_C
+
+    cost_a = 1
+    cost_b = 1
+    cost_c = 1
+
+    users_score = {}
+
+    for product in ['a', 'b', 'c']:
+        marketing = {}
+        price = {}
+        quality = {}
+        for player in players_periods:
+
+            # sort scores from lowest to highest.
+            # update each user score with 1,2,3,4 points
+
+            price[player] = max_price - getattr(player, f'price_product_{product}')
+            players_sorted_by_price = [i[0] for i in sorted(price.items(), key=lambda item: item[1])]
+            for i in range(1, len(players_sorted_by_price) + 1):
+                users_score[players_sorted_by_price[i - 1]] = i
+
+            quality[player] = getattr(player, f'product_{product}_actual_quality')
+            players_sorted_by_quality = [i[0] for i in sorted(price.items(), key=lambda item: item[1])]
+            for i in range(1, len(players_sorted_by_price) + 1):
+                users_score[players_sorted_by_quality[i - 1]] = i
+
+            marketing[player] = getattr(player, f'product_{product}_marketing')
+            players_sorted_by_marketing = [i[0] for i in sorted(marketing.items(), key=lambda item: item[1])]
+            for i in range(1, len(players_sorted_by_marketing) + 1):
+                users_score[players_sorted_by_marketing[i - 1]] += i
+
+        # TODO:!!!REMOVE THE BEWLOW PDB BREAKPOINT
+        import ipdb; ipdb.set_trace()
+        # TODO:!!!REMOVE THE ABOVE PDB BREAKPOINT
+    game.current_period += 1
+    db.session.add(game)
+
+
+def get_or_create(session, model, **kwargs):
+    """
+    session, model, **kwargs
+    """
+    instance = session.query(model).filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        session.add(instance)
+        session.commit()
+        return instance

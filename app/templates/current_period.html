@@ -9,29 +9,10 @@
     {% else %}
         <p>Team: {{user.username}}</p>
         <p>USER ID : {{user.id}}</p>
-        {% for period in user.periods%}
-            <p>period ID: {{period.id}}</p>
-            <p>period N: {{period.period_number}}</p>
-            <p>product_A_sold: {{period.product_A_sold}}</p>
-            <p>product_B_sold: {{period.product_B_sold}}</p>
-            <p>product_C_sold: {{period.product_C_sold}}</p>
-            <hr>
-        {% endfor %}
-        <hr>
-        <p>Current Period: {{current_period}} </p>
-        <p>stock A: {{user.product_A_count}} </p>
-        <p>stock B: {{user.product_B_count}} </p>
-        <p>stock C: {{user.product_C_count}} </p>
-        <p>Money: {{user.money}} </p>
-        <hr>
-        <h3>Submit data for current period</h3>
+
+        <p><a href="/current_period/1">Въведете данни за продукт: А</a></p>
+        <p><a href="/current_period/2">Въведете данни за продукт: B</a></p>
+        <p><a href="/current_period/3">Въведете данни за продукт: C</a></p>
     {% endif %}
-
-
-    <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
-        </div>
-    </div>
 
 {% endblock %}
