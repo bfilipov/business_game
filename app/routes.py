@@ -6,7 +6,7 @@ from werkzeug.urls import url_parse
 
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm
-from app.models import User, Game, Period, Demand, Userinput, Product
+from app.models import User, Game, Period, Scenario, Userinput, Product
 
 
 def admin_required(func):
