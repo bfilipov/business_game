@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 3985221b8015
-Revises: 587cf9ca8592
-Create Date: 2020-10-31 01:02:31.005694
+Revision ID: 44184f3da9a6
+Revises: 
+Create Date: 2020-10-31 13:21:28.261980
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '3985221b8015'
-down_revision = '587cf9ca8592'
+revision = '44184f3da9a6'
+down_revision = None
 branch_labels = None
 depends_on = None
 
@@ -139,17 +139,16 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_post_timestamp'), 'post', ['timestamp'], unique=False)
-    # ### end Alembic commands ###
 
     # add default admin
-    op.execute("INSERT INTO \"user\" (id, is_admin, username, email, password_hash) "
-               "VALUES (default, TRUE, 'admin', 'filipov.bogomil@gmal.com', "
+    op.execute("INSERT INTO \"user\" (id, is_admin, username, display_name, email, password_hash) "
+               "VALUES (default, TRUE, 'admin', 'баце Марчев', 'filipov.bogomil@gmal.com', "
                "'pbkdf2:sha256:150000$4cxvcwnI$dd8e2193d11aed58163e6e2fbe57283cf69cb3dd"
                "af24dec0b4ae8b579112bf29');")
 
     # populate products
     for product in [(1, 'Кисело мляко 1'), (2, 'Кисело мляко 2'), (3, 'Кисело мляко 3')]:
-        op.execute(f"INSERT INTO \"product\" (id) VALUES ({product[0]}, '{product[1]}');")
+        op.execute(f"INSERT INTO \"product\" (id, name) VALUES ({product[0]}, '{product[1]}');")
 
     # populate scenario
     for product in [1, 2, 3]:
@@ -170,6 +169,7 @@ def upgrade():
                        f'{cost_materials}, 5, 200, 1000, 5, 5, 0.5, 0.7, 1.5, 0.5, 5000, 1000, 1500, 500, 0.05, '
                        f'0.1, 50);')
     # populate scenario
+    # ### end Alembic commands ###
 
 
 def downgrade():

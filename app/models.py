@@ -100,7 +100,7 @@ class Userinput(db.Model):
 class Period(db.Model):
     id = db.Column(db.String(64), primary_key=True)
     # id is in formate -> str:
-    # 'game_id'_'user_id'_'period_number'
+    # 'game_id'_'user_id'_'period_number'_'product'
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     period_number = db.Column(db.Integer)

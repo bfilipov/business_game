@@ -6,10 +6,11 @@
         <p> Current period - {{game.current_period}}  </p>
 
         {% for player in game.players %}
-            <a href="/game/{{game.id}}/user/{{player.id}}">
-                View Game for <strong>player id: {{player.id}} Team: {{player.username}}</strong>
-            </a>
-            <hr>
+                <a href="/game/{{game.id}}/user/{{player.id}}">
+                    View Game for <strong>player id: {{player.id}}
+                    Team: {{player.username}} Name:{{player.display_name}}</strong>
+                </a>
+                <hr>
         {% endfor %}
 
     {% endfor %}

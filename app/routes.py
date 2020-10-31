@@ -55,6 +55,135 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/user/<username>')
+@login_required
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('user.html', user=user)
+
+
+@app.route('/current_period')
+@login_required
+def current_period():
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first()
+    if not game:
+        flash(f'Your team is currently not participating in the game. '
+              f'Please contact administrator.')
+        return redirect(url_for('index'))
+
+    products = Product.query.all()
+
+    return render_template('current_period.html', user=user,
+                           products=products)
+
+
+@app.route('/current_period/<product>', methods=['GET', 'POST'])
+@login_required
+def current_period_product(product):
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first()
+    if not game:
+        flash(f'Your team is currently not participating in the game. '
+              f'Please contact administrator.')
+        return redirect(url_for('index'))
+
+    product = Product.query.filter_by(id=product).first_or_404()
+    period_id = f'{game.id}_{user.id}_{game.current_period}_{product.id}'
+    period = Period.query.filter_by(id=period_id).first()
+    userinput = get_or_create(db.session, Userinput, id=f'{period.id}')
+
+    form = UserInputForm(obj=userinput)
+    if form.validate_on_submit():
+        form.populate_obj(userinput)
+        userinput.product_id = product.id
+
+        db.session.add(userinput)
+        db.session.commit()
+        flash(f'Successfully submitted form!')
+
+    return render_template('current_period_product.html', user=user,
+                           current_period=game.current_period, form=form, product=product)
+
+
+# ADMIN :
+
+@app.route('/games')
+@login_required
+@admin_required
+def games():
+    games = Game.query.filter_by(is_active=True)
+    periods = Period.query.all()
+    return render_template('games.html', games=games, periods=periods)
+
+
+@app.route('/game/<game>/user/<user>')
+@login_required
+@admin_required
+def game_user(game, user):
+    game = Game.query.filter_by(id=game).first_or_404()
+    user = User.query.filter_by(id=user).first_or_404()
+    period_n = game.current_period
+
+    period_id = f'{game.id}_{user.id}_{period_n}'
+    # filter by partial string
+    periods = Period.query.filter(Period.id.contains(period_id)).all()
+
+    return render_template('current_period.html', periods=periods, user=user)
+
+
+@app.route('/game/<game>/user/<user>/product/<product>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def game_period_review(game, user, product):
+    game = Game.query.filter_by(id=game).first_or_404()
+    user = User.query.filter_by(id=user).first_or_404()
+    period_n = game.current_period
+    product = Product.query.filter_by(id=product).first_or_404()
+
+    period_id = f'{game.id}_{user.id}_{period_n}_{product.id}'
+    period = Period.query.filter_by(id=period_id).first()
+
+    userinput = Userinput.query.filter_by(id=period_id, product_id=product.id).first()
+    form = ReviewUserInputForm(obj=userinput)
+    if form.validate_on_submit():
+        form.populate_obj(userinput)
+        db.session.add(userinput)
+        db.session.commit()
+        flash(f'Successfully updated form! {form.data}')
+
+    return render_template('current_period_product.html', period=period,
+                           user=user, product=product, form=form)
+
+
+def calculate_period_product_results():
+    pass
+
+
+@app.route('/admin/reveiw_scenario/product<product>/period<period>/', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def reveiw_scenario(product, period):
+    scenario = Scenario.query.filter_by(product_id=product, period=period).first_or_404()
+    product = Product.query.filter_by(id=product).first_or_404()
+    form = ScenarioForm(obj=scenario)
+    if form.validate_on_submit():
+        form.populate_obj(scenario)
+        db.session.add(scenario)
+        db.session.commit()
+        flash(f'Successfully updated scenario')
+
+    return render_template('scenario.html', form=form, scenario=scenario, product=product)
+
+
+@app.route('/admin/scenarios')
+@login_required
+@admin_required
+def scenarios_list():
+    scenarios = Scenario.query.order_by(Scenario.period, Scenario.product_id).all()
+    return render_template('scenario_list.html', scenarios=scenarios)
+
+
 @app.route('/admin/register', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -84,10 +213,14 @@ def register():
         db.session.add(game)
         db.session.flush()
 
-        initial_period = Period(id=f'{game.id}_{user.id}_1', game_id=game.id,
-                                period_number=1)
-        user.periods.append(initial_period)
         user.game_id = game.id
+
+        products = Product.query.all()
+        for product in products:
+            initial_period = Period(id=f'{game.id}_{user.id}_1_{product.id}', game_id=game.id,
+                                    period_number=1, product_id=product.id)
+            user.periods.append(initial_period)
+
         db.session.add(user)
         db.session.commit()
 
@@ -96,127 +229,8 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-def get_game(players_limit_per_game=PLAYERS_PER_GAME):
-    games = [g for g in Game.query.filter_by(is_active=True).all()
-             if len(g.players.all()) < players_limit_per_game]
-    return games[0] if games else create_game(scenario_id=SCENARIO_ID)
-
-
-def create_game(scenario_id):
-    return Game(demand_scenario_id=scenario_id)
-
-
-@app.route('/admin/reveiw_scenario/product<product>/period<period>/', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def reveiw_scenario(product, period):
-    scenario = Scenario.query.filter_by(product_id=product, period=period).first_or_404()
-    product = Product.query.filter_by(id=product).first_or_404()
-    form = ScenarioForm(obj=scenario)
-    if form.validate_on_submit():
-        form.populate_obj(scenario)
-        db.session.add(scenario)
-        db.session.commit()
-        flash(f'Successfully updated scenario')
-
-    return render_template('scenario.html', form=form, scenario=scenario, product=product)
-
-
-@app.route('/admin/scenarios')
-@login_required
-@admin_required
-def scenarios_list():
-    scenarios = Scenario.query.order_by(Scenario.period, Scenario.product_id).all()
-    return render_template('scenario_list.html', scenarios=scenarios)
-
-
-@app.route('/user/<username>')
-@login_required
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    return render_template('user.html', user=user)
-
-
-@app.route('/games')
-@login_required
-@admin_required
-def games():
-    games = Game.query.filter_by(is_active=True)
-    periods = Period.query.all()
-    return render_template('games.html', games=games, periods=periods)
-
-
-@app.route('/current_period')
-@login_required
-def current_period():
-    user = current_user
-    game = Game.query.filter_by(id=user.game_id).first()
-    if not game:
-        flash(f'Your team is currently not participating in the game. '
-              f'Please contact administrator.')
-        return redirect(url_for('index'))
-    return render_template('current_period.html', user=user,
-                           current_period=game.current_period)
-
-
-@app.route('/current_period/<product>', methods=['GET', 'POST'])
-@login_required
-def current_period_product(product):
-    user = current_user
-    game = Game.query.filter_by(id=user.game_id).first()
-    if not game:
-        flash(f'Your team is currently not participating in the game. '
-              f'Please contact administrator.')
-        return redirect(url_for('index'))
-
-    product = Product.query.filter_by(id=product).first_or_404()
-    period_id = f'{game.id}_{user.id}_{game.current_period}'
-    period = Period.query.filter_by(id=period_id).first()
-    userinput = get_or_create(db.session, Userinput, id=f'{period.id}_{product.id}')
-
-    form = UserInputForm(obj=userinput)
-    if form.validate_on_submit():
-        form.populate_obj(userinput)
-        userinput.product_id = product.id
-
-        db.session.add(userinput)
-        db.session.commit()
-        flash(f'Successfully submitted form!')
-
-    return render_template('current_period_product.html', user=user,
-                           current_period=game.current_period, form=form, product=product)
-
-
-@app.route('/game/<game>/user/<user>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def game_period_review(game, user):
-    game = Game.query.filter_by(id=game).first_or_404()
-    user = User.query.filter_by(id=user).first_or_404()
-    period_n = game.current_period
-
-    period_id = f'{game.id}_{user.id}_{period_n}'
-
-    period = Period.query.filter_by(id=period_id).first()
-    form = UserInputForm(obj=period)
-
-    if form.validate_on_submit():
-        form.populate_obj(period)
-        db.session.add(period)
-
-        players_periods = [game.players[i].periods.filter_by(period_number=period_n).first()
-                           for i in range(len(game.players.all()))]
-
-        if all([i.approved for i in players_periods]):
-            calculate_period_results(game, players_periods)
-
-        db.session.commit()
-        flash(f'Successfully updated form! {form.data}')
-
-    return render_template('current_period.html', period=period, user=user, form=form)
-
-
-def calculate_period_results(game, players_periods):
+# funks
+def calculate_period_results(game, player):
     pass
 
 
@@ -232,3 +246,14 @@ def get_or_create(session, model, **kwargs):
         session.add(instance)
         session.commit()
         return instance
+
+
+def get_game(players_limit_per_game=PLAYERS_PER_GAME):
+    games = [g for g in Game.query.filter_by(is_active=True).all()
+             if len(g.players.all()) < players_limit_per_game]
+    return games[0] if games else create_game(scenario_id=SCENARIO_ID)
+
+
+def create_game(scenario_id):
+    return Game(demand_scenario_id=scenario_id)
+

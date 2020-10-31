@@ -5,14 +5,23 @@
 {% block app_content %}
 
     {% if current_user.is_admin %}
-        <h3>Review data for <strong>Game: {{user.game_id}}</strong> <strong>User: {{user.id}}</strong> <strong>Period:{{period.period_number}}</strong></h3>
+
+        <h3>Review data for <strong>Game: {{user.game_id}}</strong></h3>
+        {% for period in periods%}
+            <strong>User: {{user.id}}</strong>
+            <strong>Period:{{period.period_number}}</strong>
+            <strong>Product:{{period.product_id}}</strong>
+            <p><a href="/game/{{user.game_id}}/user/{{user.id}}/product/{{period.product_id}}">
+               Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
+                Продукт: {{period.product_id}}</a></p>
+        {% endfor %}
     {% else %}
         <p>Team: {{user.username}}</p>
         <p>USER ID : {{user.id}}</p>
-
-        <p><a href="/current_period/1">Въведете данни за продукт: А</a></p>
-        <p><a href="/current_period/2">Въведете данни за продукт: B</a></p>
-        <p><a href="/current_period/3">Въведете данни за продукт: C</a></p>
+        {% for product in products%}
+            <p><a href="/current_period/{{product.id}}">
+                Въведете данни за продукт: {{product.name}}</a></p>
+        {% endfor %}
     {% endif %}
 
 {% endblock %}
