@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block app_content %}
+
+    {% for scenario in scenarios %}
+        <a href="/admin/reveiw_scenario/product{{scenario.product_id}}/period{{scenario.period}}/">
+            Scenario for <strong>Period: {{scenario.period}} Product: {{scenario.product_id}} </strong>
+        </a>
+        <hr>
+    {% endfor %}
+
+
+{% endblock %}

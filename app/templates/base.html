@@ -1,7 +1,7 @@
 {% extends 'bootstrap/base.html' %}
 
 {% block title %}
-    {% if title %}{{ title }} - Microblog{% else %}Welcome to Microblog{% endif %}
+    {% if title %}{{ title }} - Yogurt{% else %}Yogurt{% endif %}
 {% endblock %}
 
 {% block navbar %}
@@ -10,6 +10,7 @@
             {% if current_user.is_anonymous %}
                 <a href="{{ url_for('login') }}">Login</a>
             {% elif current_user.is_admin %}
+                <a href="{{ url_for('scenarios_list') }}">Review Scenarios</a>
                 <a href="{{ url_for('games') }}">Review Games</a>
                 <a href="{{ url_for('register') }}">Register New User</a>
                 <a href="{{ url_for('logout') }}">Logout</a>

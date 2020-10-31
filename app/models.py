@@ -4,7 +4,6 @@ from hashlib import md5
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
 from app import db
 from app import login
 
@@ -13,9 +12,21 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     is_admin = db.Column(db.Boolean, default=False)
     username = db.Column(db.String(64), index=True, unique=True)
+    display_name = db.Column(db.String(120), unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(120))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+    member1 = db.Column(db.String(120))
+    member2 = db.Column(db.String(120))
+    member3 = db.Column(db.String(120))
+    member4 = db.Column(db.String(120))
+    member5 = db.Column(db.String(120))
+    member6 = db.Column(db.String(120))
+    member7 = db.Column(db.String(120))
+    member8 = db.Column(db.String(120))
+    member9 = db.Column(db.String(120))
+    member10 = db.Column(db.String(120))
 
     # game specifics
     periods = db.relationship('Period', backref='player', lazy='dynamic')
@@ -108,7 +119,7 @@ class Period(db.Model):
     labot_costs = db.Column(db.Integer)  # Труд
     material_costs = db.Column(db.Integer)  # матeриали
 
-    gross_proffit = db.Column(db.Integer) # Брутна печалба
+    gross_proffit = db.Column(db.Integer)  # Брутна печалба
 
     # non-production costs
     marketing_costs = db.Column(db.Integer)  # маркетинг
@@ -144,20 +155,20 @@ class Scenario(db.Model):
     # product reference
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))  # A,B,C
 
-    demand_quantity = db.Colunmn(db.Integer)  # брой продажби
+    demand_quantity = db.Column(db.Integer)  # брой продажби
     sensitivity_price = db.Column(db.Float)  # чувствителност цена
     sensitivity_quality = db.Column(db.Float)  # чувствителност качество
-    sensitivity_marketing= db.Column(db.Float)  # чувствителност маркетинг
+    sensitivity_marketing = db.Column(db.Float)  # чувствителност маркетинг
     correction_cost_labor = db.Column(db.Float)  # корекция на разходи за труд
     correction_cost_materials_for_one_product = db.Column(db.Float)  # корекция на разходи за материали
-    cost_unpredicted= db.Column(db.Integer)  # непредвидени разходи prod
+    cost_unpredicted = db.Column(db.Integer)  # непредвидени разходи prod
     cost_materials_for_one_product = db.Column(db.Float)  # разх. за матер. за 1 прод.
-    cost_labor= db.Column(db.Float)  # разходи за труд
+    cost_labor = db.Column(db.Float)  # разходи за труд
     investment_for_one_marketing = db.Column(db.Integer)  # единица маркетинг
     investment_for_one_quality = db.Column(db.Integer)  # необх. Инвестиция за 1 ед. Качество
-    quality_index_min= db.Column(db.Float)  # макс индекси
+    quality_index_min = db.Column(db.Float)  # макс индекси
     quality_index_max = db.Column(db.Float)  # мин индекс качество
-    marketing_keep_effect= db.Column(db.Float)  # запазващ се ефект индекс маркетинг
+    marketing_keep_effect = db.Column(db.Float)  # запазващ се ефект индекс маркетинг
     base_value_rand_quality = db.Column(db.Float)  # базова ст-ат за Rand на качество
     cost_transport = db.Column(db.Float)  # транспортни разходи
     cost_storage = db.Column(db.Float)  # складови разходи
@@ -171,9 +182,6 @@ class Scenario(db.Model):
     interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
     max_price = db.Column(db.Float)  # макс цена
 
-
-
-#
 # ## FILL IN DEMAND TABLE IN MIGRATION!!!!!
 #
 # # populate demand scenario:

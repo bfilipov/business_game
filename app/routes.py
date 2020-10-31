@@ -5,8 +5,11 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm
+from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm, ScenarioForm
 from app.models import User, Game, Period, Scenario, Userinput, Product
+
+PLAYERS_PER_GAME = 10
+SCENARIO_ID = 1
 
 
 def admin_required(func):
@@ -15,6 +18,7 @@ def admin_required(func):
         if not current_user.is_admin:
             return current_app.login_manager.unauthorized()
         return func(*args, **kwargs)
+
     return decorated_view
 
 
@@ -58,6 +62,20 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
+
+        user.display_name = form.display_name.data
+
+        user.member1 = form.member1.data
+        user.member2 = form.member2.data
+        user.member3 = form.member3.data
+        user.member4 = form.member4.data
+        user.member5 = form.member5.data
+        user.member6 = form.member6.data
+        user.member7 = form.member7.data
+        user.member8 = form.member8.data
+        user.member9 = form.member9.data
+        user.member10 = form.member10.data
+
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.flush()
@@ -78,25 +96,45 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-def get_game(players_limit_per_game=4):
+def get_game(players_limit_per_game=PLAYERS_PER_GAME):
     games = [g for g in Game.query.filter_by(is_active=True).all()
              if len(g.players.all()) < players_limit_per_game]
-    return games[0] if games else create_game()
+    return games[0] if games else create_game(scenario_id=SCENARIO_ID)
 
 
-def create_game():
-    return Game()
+def create_game(scenario_id):
+    return Game(demand_scenario_id=scenario_id)
+
+
+@app.route('/admin/reveiw_scenario/product<product>/period<period>/', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def reveiw_scenario(product, period):
+    scenario = Scenario.query.filter_by(product_id=product, period=period).first_or_404()
+    product = Product.query.filter_by(id=product).first_or_404()
+    form = ScenarioForm(obj=scenario)
+    if form.validate_on_submit():
+        form.populate_obj(scenario)
+        db.session.add(scenario)
+        db.session.commit()
+        flash(f'Successfully updated scenario')
+
+    return render_template('scenario.html', form=form, scenario=scenario, product=product)
+
+
+@app.route('/admin/scenarios')
+@login_required
+@admin_required
+def scenarios_list():
+    scenarios = Scenario.query.order_by(Scenario.period, Scenario.product_id).all()
+    return render_template('scenario_list.html', scenarios=scenarios)
 
 
 @app.route('/user/<username>')
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+    return render_template('user.html', user=user)
 
 
 @app.route('/games')
@@ -138,7 +176,6 @@ def current_period_product(product):
 
     form = UserInputForm(obj=userinput)
     if form.validate_on_submit():
-
         form.populate_obj(userinput)
         userinput.product_id = product.id
 
@@ -154,7 +191,6 @@ def current_period_product(product):
 @login_required
 @admin_required
 def game_period_review(game, user):
-
     game = Game.query.filter_by(id=game).first_or_404()
     user = User.query.filter_by(id=user).first_or_404()
     period_n = game.current_period
@@ -181,58 +217,7 @@ def game_period_review(game, user):
 
 
 def calculate_period_results(game, players_periods):
-
-    max_price = 10
-
-    percentages = {
-        1: 40,
-        2: 30,
-        3: 20,
-        4: 10
-    }
-
-    current_demand = Demand.query.filter_by(demand_scenario_id=game.demand_scenario_id,
-                                            period=game.current_period).first()
-
-    demand_a = current_demand.demand_A
-    demand_b = current_demand.demand_B
-    demand_c = current_demand.demand_C
-
-    cost_a = 1
-    cost_b = 1
-    cost_c = 1
-
-    users_score = {}
-
-    for product in ['a', 'b', 'c']:
-        marketing = {}
-        price = {}
-        quality = {}
-        for player in players_periods:
-
-            # sort scores from lowest to highest.
-            # update each user score with 1,2,3,4 points
-
-            price[player] = max_price - getattr(player, f'price_product_{product}')
-            players_sorted_by_price = [i[0] for i in sorted(price.items(), key=lambda item: item[1])]
-            for i in range(1, len(players_sorted_by_price) + 1):
-                users_score[players_sorted_by_price[i - 1]] = i
-
-            quality[player] = getattr(player, f'product_{product}_actual_quality')
-            players_sorted_by_quality = [i[0] for i in sorted(price.items(), key=lambda item: item[1])]
-            for i in range(1, len(players_sorted_by_price) + 1):
-                users_score[players_sorted_by_quality[i - 1]] = i
-
-            marketing[player] = getattr(player, f'product_{product}_marketing')
-            players_sorted_by_marketing = [i[0] for i in sorted(marketing.items(), key=lambda item: item[1])]
-            for i in range(1, len(players_sorted_by_marketing) + 1):
-                users_score[players_sorted_by_marketing[i - 1]] += i
-
-        # TODO:!!!REMOVE THE BEWLOW PDB BREAKPOINT
-        import ipdb; ipdb.set_trace()
-        # TODO:!!!REMOVE THE ABOVE PDB BREAKPOINT
-    game.current_period += 1
-    db.session.add(game)
+    pass
 
 
 def get_or_create(session, model, **kwargs):

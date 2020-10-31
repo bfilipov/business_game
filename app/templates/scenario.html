@@ -1,11 +1,14 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
-
 {% block app_content %}
-    <h1>Register new team</h1>
+
+    <p> Product: {{product.name}} id:{{product.id}} </p>
+    <p> Scenario period - {{scenario.period}}  </p>
+
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+
 {% endblock %}
