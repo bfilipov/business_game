@@ -10,6 +10,8 @@ from app.models import User, Game, Period, Scenario, Userinput, Product
 
 PLAYERS_PER_GAME = 10
 SCENARIO_ID = 1
+AUTO_APPROVE_RESULTS = True
+AUTO_PUBLISH_RESULTS = False
 
 
 def admin_required(func):
@@ -97,22 +99,51 @@ def current_period_product(product):
     if form.validate_on_submit():
         form.populate_obj(userinput)
         userinput.product_id = product.id
+        userinput.period_number = game.current_period
+        userinput.user_id = user.id
+
+        if AUTO_APPROVE_RESULTS:
+            userinput.approved_by_admin = True
 
         db.session.add(userinput)
         db.session.commit()
         flash(f'Successfully submitted form!')
+
+    if AUTO_PUBLISH_RESULTS:
+        pass
+        # todo: add period calculation here
 
     return render_template('current_period_product.html', user=user,
                            current_period=game.current_period, form=form, product=product)
 
 
 # ADMIN :
+@app.route('/calculate_period_results')
+@login_required
+@admin_required
+def calculate_period_results():
+    games = Game.query.filter_by(is_active=True).all()
+    periods = Period.query.all()
+
+    approved_games = []
+    for game in games:
+        period_n = game.current_period
+
+        game_inputs = [game.players[i].userinput.filter_by(period_number=period_n).all()
+                       for i in range(len(game.players.all()))]
+
+        # all user inputs in game for current period are approved
+        if all([input.approved_by_admin for i in game_inputs for input in i]):
+            _calculate_period_results(game)
+
+    return render_template('calculate_period_results.html', games=approved_games, periods=periods)
+
 
 @app.route('/games')
 @login_required
 @admin_required
 def games():
-    games = Game.query.filter_by(is_active=True)
+    games = Game.query.filter_by(is_active=True).all()
     periods = Period.query.all()
     return render_template('games.html', games=games, periods=periods)
 
@@ -230,8 +261,37 @@ def register():
 
 
 # funks
-def calculate_period_results(game, player):
-    pass
+def _calculate_period_results(game):
+    for player in game.players:
+        for input in player.userinput.filter_by(period_number=game.current_period).all():
+
+            scenario = Scenario.query.filter_by(
+                demand_scenario_id=game.demand_scenario_id, period=game.current_period,
+                product_id=input.product_id).first()
+
+            produce_quantity = input.produce_quantity
+            sell_price = input.sell_price
+
+            marketing_costs = input.marketing_costs
+            research_and_development_costs = input.research_and_development_costs
+
+            marketing_research_marketing_costs = 1 if input.marketing_research_marketing_costs else 0
+            marketing_research_price = 1 if input.marketing_research_price else 0
+            marketing_research_quality = 1 if input.marketing_research_quality else 0
+            marketing_research_sales = 1 if input.marketing_research_sales else 0
+
+            marketing_index = None
+            consolidated_RnD_budget = None
+            quality_index = None
+            quality_index = None
+            quality_index = None
+            quality_index = None
+            quality_index = None
+
+
+            # TODO:!!!REMOVE THE BEWLOW PDB BREAKPOINT
+            import ipdb; ipdb.set_trace()
+            # TODO:!!!REMOVE THE ABOVE PDB BREAKPOINT
 
 
 def get_or_create(session, model, **kwargs):

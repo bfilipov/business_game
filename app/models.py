@@ -16,6 +16,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(120))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    userinput = db.relationship('Userinput', backref='player', lazy='dynamic')
 
     member1 = db.Column(db.String(120))
     member2 = db.Column(db.String(120))
@@ -78,8 +79,12 @@ class Userinput(db.Model):
     # id is in formate -> str:
     # 'game_id'_'user_id'_'period_number_product_id'
 
+    # user ref
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
     # period reference
     period_id = db.relationship('Period', backref='userinput', lazy='dynamic')
+    period_number = db.Column(db.Integer)
 
     # product reference
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))  # A,B,C
@@ -116,20 +121,22 @@ class Period(db.Model):
 
     # COSTS:
     # production costs
-    labot_costs = db.Column(db.Integer)  # Труд
-    material_costs = db.Column(db.Integer)  # матeриали
+    labor_costs = db.Column(db.Float)  # Труд
+    material_costs = db.Column(db.Float)  # матeриали
+    total_production_cost = db.Column(db.Float)  # матeриали
 
-    gross_proffit = db.Column(db.Integer)  # Брутна печалба
+    gross_proffit = db.Column(db.Float)  # Брутна печалба
 
     # non-production costs
-    marketing_costs = db.Column(db.Integer)  # маркетинг
-    research_and_development_costs = db.Column(db.Integer)  # R & D
-    transport_costs = db.Column(db.Integer)  # транспорт
-    storage_costs = db.Column(db.Integer)  # складови
-    administrative_costs = db.Column(db.Integer)  # административни
-    marketing_research_costs = db.Column(db.Integer)  # разходи за проучвания
-    interest_costs = db.Column(db.Integer)  # лихви (разхвърляни пропорционално)
-    other_costs = db.Column(db.Integer)  # други (от сценария)
+    marketing_costs = db.Column(db.Float)  # маркетинг
+    research_and_development_costs = db.Column(db.Float)  # R & D
+    transport_costs = db.Column(db.Float)  # транспорт
+    storage_costs = db.Column(db.Float)  # складови
+    administrative_costs = db.Column(db.Float)  # административни
+    marketing_research_costs = db.Column(db.Float)  # разходи за проучвания
+    interest_costs = db.Column(db.Float)  # лихви (разхвърляни пропорционално)
+    other_costs = db.Column(db.Float)  # други (от сценария)
+    total_non_production_costs = db.Column(db.Float)  # други (от сценария)
 
     # QUANTITY
     products_sold = db.Column(db.Integer)
