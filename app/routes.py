@@ -265,14 +265,17 @@ def _calculate_period_results(game):
     for player in game.players:
         for input in player.userinput.filter_by(period_number=game.current_period).all():
 
+            # scenario for current period current product
             scenario = Scenario.query.filter_by(
                 demand_scenario_id=game.demand_scenario_id, period=game.current_period,
                 product_id=input.product_id).first()
+
 
             produce_quantity = input.produce_quantity
             sell_price = input.sell_price
 
             marketing_costs = input.marketing_costs
+
             research_and_development_costs = input.research_and_development_costs
 
             marketing_research_marketing_costs = 1 if input.marketing_research_marketing_costs else 0
@@ -280,7 +283,10 @@ def _calculate_period_results(game):
             marketing_research_quality = 1 if input.marketing_research_quality else 0
             marketing_research_sales = 1 if input.marketing_research_sales else 0
 
-            marketing_index = None
+            if scenario.period == 1:
+                previous_period_marketing_index = scenario.marketing_index
+            marketing_index = marketing_costs / (scenario.investment_for_one_marketing + (previous_period_marketing_index * scenario.marketing_keep_effect)
+
             consolidated_RnD_budget = None
             quality_index = None
             quality_index = None

@@ -161,12 +161,12 @@ def upgrade():
                        'demand_quantity, sensitivity_price, sensitivity_quality, sensitivity_marketing, '
                        'correction_cost_labor, correction_cost_materials_for_one_product, '
                        'cost_unpredicted, cost_materials_for_one_product, cost_labor, investment_for_one_marketing, '
-                       'investment_for_one_quality, quality_index_min, quality_index_max, marketing_keep_effect, '
-                       'base_value_rand_quality, cost_transport, cost_storage, cost_fixed_administrative, '
-                       'cost_product_manager, cost_new_product_manager, price_research, interest_credit, '
-                       'interest_overdraft, max_price) '
+                       'investment_for_one_quality, quality_index_min, quality_index_max, marketing_index_min, '
+                       'marketing_index_max marketing_keep_effect, base_value_rand_quality, cost_transport, '
+                       'cost_storage, cost_fixed_administrative, cost_product_manager, cost_new_product_manager, '
+                       'price_research, interest_credit, interest_overdraft, max_price) '
                        f'VALUES (default, 1, {period}, {product}, 3850, 1, 1.05, 0.95, 1, 1, {cost_unpredicted}, '
-                       f'{cost_materials}, 5, 200, 1000, 5, 5, 0.5, 0.7, 1.5, 0.5, 5000, 1000, 1500, 500, 0.05, '
+                       f'{cost_materials}, 5, 200, 1000, 2, 5, 2, 5, 0.5, 0.7, 1.5, 0.5, 5000, 1000, 1500, 500, 0.05, '
                        f'0.1, 50);')
     # populate scenario
     # ### end Alembic commands ###

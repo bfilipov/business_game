@@ -117,7 +117,7 @@ class Period(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))  # A,B,C
 
     # Приходи
-    income_from_sells = db.Column(db.Integer)
+    income_from_sells = db.Column(db.Float)
 
     # COSTS:
     # production costs
@@ -126,9 +126,11 @@ class Period(db.Model):
     total_production_cost = db.Column(db.Float)  # матeриали
 
     gross_proffit = db.Column(db.Float)  # Брутна печалба
+    net_proffit = db.Column(db.Float)  # Нетна печалба
+    accumulated_proffit = db.Column(db.Float)  # натрупана печалба до момента
 
     # non-production costs
-    marketing_costs = db.Column(db.Float)  # маркетинг
+    marketing_costs = db.Column(db.Float)  # маркетинг // marketing budget
     research_and_development_costs = db.Column(db.Float)  # R & D
     transport_costs = db.Column(db.Float)  # транспорт
     storage_costs = db.Column(db.Float)  # складови
@@ -136,12 +138,17 @@ class Period(db.Model):
     marketing_research_costs = db.Column(db.Float)  # разходи за проучвания
     interest_costs = db.Column(db.Float)  # лихви (разхвърляни пропорционално)
     other_costs = db.Column(db.Float)  # други (от сценария)
-    total_non_production_costs = db.Column(db.Float)  # други (от сценария)
+    total_non_production_costs = db.Column(db.Float)  # общо
 
     # QUANTITY
-    products_sold = db.Column(db.Integer)
-    products_in_stock_beggining_of_period = db.Column(db.Integer)
-    products_in_stock_end_of_period = db.Column(db.Integer)
+    products_sold = db.Column(db.Integer)  # Продажби (идват от пазара)
+    products_in_stock_beggining_of_period = db.Column(db.Integer)  # останали на склад в началото на периода
+    products_in_stock_end_of_period = db.Column(db.Integer)  # останали на склад след края на периода
+
+    # dummy variables // изчисляеми, но скрити стойности
+    total_costs = db.Column(db.Float)  # пълна себестойност - (произвпдствени + непроизводствени) / брой продукция
+    product_manager_costs = db.Column(db.Float)  # разходи за продуктов мениджър за период/продукт
+    is_producing = db.Column(db.Boolean)  # има ли производство
 
     def __repr__(self):
         return f'<Period {self.id}>'
@@ -163,30 +170,42 @@ class Scenario(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))  # A,B,C
 
     demand_quantity = db.Column(db.Integer)  # брой продажби
+
     sensitivity_price = db.Column(db.Float)  # чувствителност цена
     sensitivity_quality = db.Column(db.Float)  # чувствителност качество
     sensitivity_marketing = db.Column(db.Float)  # чувствителност маркетинг
+
     correction_cost_labor = db.Column(db.Float)  # корекция на разходи за труд
     correction_cost_materials_for_one_product = db.Column(db.Float)  # корекция на разходи за материали
+
     cost_unpredicted = db.Column(db.Integer)  # непредвидени разходи prod
     cost_materials_for_one_product = db.Column(db.Float)  # разх. за матер. за 1 прод.
     cost_labor = db.Column(db.Float)  # разходи за труд
+
     investment_for_one_marketing = db.Column(db.Integer)  # единица маркетинг
     investment_for_one_quality = db.Column(db.Integer)  # необх. Инвестиция за 1 ед. Качество
-    quality_index_min = db.Column(db.Float)  # макс индекси
+
+    quality_index_min = db.Column(db.Float)  # макс индекс качество
     quality_index_max = db.Column(db.Float)  # мин индекс качество
+
+    marketing_index_min = db.Column(db.Float)  # макс индекс маркетинг
+    marketing_index_max = db.Column(db.Float)  # мин индекс маркетинг
+
     marketing_keep_effect = db.Column(db.Float)  # запазващ се ефект индекс маркетинг
     base_value_rand_quality = db.Column(db.Float)  # базова ст-ат за Rand на качество
+
     cost_transport = db.Column(db.Float)  # транспортни разходи
     cost_storage = db.Column(db.Float)  # складови разходи
     cost_fixed_administrative = db.Column(db.Integer)  # фиксирани административни разходи
     cost_product_manager = db.Column(db.Integer)  # продуктов мениджър
     cost_new_product_manager = db.Column(db.Integer)  # нов продуктов мениджър
+
     price_research = db.Column(db.Integer)  # цена на проучване
     # starting_capital = db.Column()  # начален капитал (заем)
     # max_loan = db.Column()  # макс. Размер на изтеглен заем за период
     interest_credit = db.Column(db.Float)  # лихвен процент кредит
     interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
+
     max_price = db.Column(db.Float)  # макс цена
 
 # ## FILL IN DEMAND TABLE IN MIGRATION!!!!!
