@@ -32,7 +32,6 @@ class User(UserMixin, db.Model):
     # game specifics
     periods = db.relationship('Period', backref='player', lazy='dynamic')
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    money_total = db.Column(db.Integer)
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -102,10 +101,33 @@ class Userinput(db.Model):
     approved_by_admin = db.Column(db.Boolean, default=False)
 
 
-class Period(db.Model):
+class PeriodTotals(db.Model):
+    # id format -> str:
+    # 'game_id'_'user_id'_'period_number'
     id = db.Column(db.String(64), primary_key=True)
-    # id is in formate -> str:
+
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    period_number = db.Column(db.Integer)
+
+    # used for calculations on current period
+    money_total_begining_of_period = db.Column(db.Float)
+    money_total_end_of_period = db.Column(db.Float)
+    total_production_quantity = db.Column(db.Integer)
+    total_administrative_costs = db.Column(db.Float)
+    total_interest_costs = db.Column(db.Float)
+
+    # finansial
+    money_total = db.Column(db.Float)  # разполагаеми средства
+    credit_total = db.Column(db.Float)  # Кредит/депозит
+    overdraft = db.Column(db.Float)  # овърдрафт
+
+
+class Period(db.Model):
+    # id format -> str:
     # 'game_id'_'user_id'_'period_number'_'product'
+    id = db.Column(db.String(64), primary_key=True)
+
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     period_number = db.Column(db.Integer)
@@ -116,18 +138,19 @@ class Period(db.Model):
     # product reference
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))  # A,B,C
 
-    # Приходи
+    sell_price = db.Column(db.Float)
+
+    # Income/proffit
     income_from_sells = db.Column(db.Float)
+    gross_proffit = db.Column(db.Float)  # Брутна печалба
+    net_proffit = db.Column(db.Float)  # Нетна печалба
+    accumulated_proffit = db.Column(db.Float)  # натрупана печалба до момента
 
     # COSTS:
     # production costs
     labor_costs = db.Column(db.Float)  # Труд
     material_costs = db.Column(db.Float)  # матeриали
     total_production_cost = db.Column(db.Float)  # матeриали
-
-    gross_proffit = db.Column(db.Float)  # Брутна печалба
-    net_proffit = db.Column(db.Float)  # Нетна печалба
-    accumulated_proffit = db.Column(db.Float)  # натрупана печалба до момента
 
     # non-production costs
     marketing_costs = db.Column(db.Float)  # маркетинг // marketing budget
@@ -142,13 +165,41 @@ class Period(db.Model):
 
     # QUANTITY
     products_sold = db.Column(db.Integer)  # Продажби (идват от пазара)
-    products_in_stock_beggining_of_period = db.Column(db.Integer)  # останали на склад в началото на периода
+    products_in_stock_beginning_of_period = db.Column(db.Integer)  # останали на склад в началото на периода
     products_in_stock_end_of_period = db.Column(db.Integer)  # останали на склад след края на периода
 
+    # research
+    research_price = db.Column(db.Integer)
+    research_marketing = db.Column(db.Integer)
+    research_quality = db.Column(db.Integer)
+    research_sales = db.Column(db.Integer)
+
     # dummy variables // изчисляеми, но скрити стойности
+    index_marketing = db.Column(db.Float)
+    index_quality = db.Column(db.Float)
+
+    consolidated_rnd_budget = db.Column(db.Float)  # натрупан бюджет за R & D // Инвестиция в R & D - натруп
+    consolidated_marketing_budget = db.Column(db.Float)  # натрупан бюджет за маркетинг
+
     total_costs = db.Column(db.Float)  # пълна себестойност - (произвпдствени + непроизводствени) / брой продукция
     product_manager_costs = db.Column(db.Float)  # разходи за продуктов мениджър за период/продукт
     is_producing = db.Column(db.Boolean)  # има ли производство
+
+    # market fields
+    recalc_quality = db.Column(db.Float)
+    recalc_marketing = db.Column(db.Float)
+    recalc_price = db.Column(db.Float)
+    combined_score = db.Column(db.Float)
+
+    market_share = db.Column(db.Float)
+    demand = db.Column(db.Integer)
+    direct_sells = db.Column(db.Integer)
+    unsatisfied_demand = db.Column(db.Integer)
+    secondary_sells = db.Column(db.Integer)
+    total_sells = db.Column(db.Integer)
+
+    # random
+    random_value = db.Column(db.Float)
 
     def __repr__(self):
         return f'<Period {self.id}>'
@@ -159,8 +210,19 @@ class Product(db.Model):
     name = db.Column(db.String)
 
 
-class Scenario(db.Model):
+class ScenarioPerPeriod(db.Model):
     # Scenario per period
+    id = db.Column(db.Integer, primary_key=True)
+    demand_scenario_id = db.Column(db.Integer)
+    period = db.Column(db.Integer)  # number of period
+
+    cost_fixed_administrative = db.Column(db.Integer)  # фиксирани административни разходи
+    interest_credit = db.Column(db.Float)  # лихвен процент кредит
+    interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
+
+
+class ScenarioPerProduct(db.Model):
+    # Scenario per product
     id = db.Column(db.Integer, primary_key=True)
     demand_scenario_id = db.Column(db.Integer)
 
@@ -196,72 +258,50 @@ class Scenario(db.Model):
 
     cost_transport = db.Column(db.Float)  # транспортни разходи
     cost_storage = db.Column(db.Float)  # складови разходи
-    cost_fixed_administrative = db.Column(db.Integer)  # фиксирани административни разходи
+    # cost_fixed_administrative = db.Column(db.Integer)  # фиксирани административни разходи
     cost_product_manager = db.Column(db.Integer)  # продуктов мениджър
     cost_new_product_manager = db.Column(db.Integer)  # нов продуктов мениджър
 
     price_research = db.Column(db.Integer)  # цена на проучване
     # starting_capital = db.Column()  # начален капитал (заем)
     # max_loan = db.Column()  # макс. Размер на изтеглен заем за период
-    interest_credit = db.Column(db.Float)  # лихвен процент кредит
-    interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
+    # interest_credit = db.Column(db.Float)  # лихвен процент кредит
+    # interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
 
     max_price = db.Column(db.Float)  # макс цена
 
-# ## FILL IN DEMAND TABLE IN MIGRATION!!!!!
-#
-# # populate demand scenario:
-# demands = {
-#     'scenario_1': {
-#         'scenario_id': 1,
-#         'periods': [
-#             {1: [200, 300, 400]},
-#             {2: [200, 300, 400]},
-#             {3: [200, 300, 400]},
-#             {4: [200, 300, 400]},
-#             {5: [200, 300, 400]},
-#             {6: [200, 300, 400]},
-#             {7: [200, 300, 400]},
-#             {8: [200, 300, 400]},
-#             {9: [200, 300, 400]},
-#             {10: [200, 300, 400]},
-#             {11: [200, 300, 400]},
-#             {12: [200, 300, 400]},
-#             {13: [200, 300, 400]},
-#             {14: [200, 300, 400]},
-#             {15: [200, 300, 400]},
-#             {16: [200, 300, 400]},
-#             {17: [200, 300, 400]},
-#             {18: [200, 300, 400]},
-#             {19: [200, 300, 400]},
-#             {20: [200, 300, 400]},
-#         ]
-#     }
-# }
-#
-#
-# def upgrade():
-#     # ### commands auto generated by Alembic - please adjust! ###
-#     op.create_table('demand',
-#     sa.Column('id', sa.Integer(), nullable=False),
-#     sa.Column('demand_scenario_id', sa.Integer(), nullable=True),
-#     sa.Column('period', sa.Integer(), nullable=True),
-#     sa.Column('demand_A', sa.Integer(), nullable=True),
-#     sa.Column('demand_B', sa.Integer(), nullable=True),
-#     sa.Column('demand_C', sa.Integer(), nullable=True),
-#     sa.PrimaryKeyConstraint('id')
-#     )
-#
-#     # ### commands made by bogo ###
-#     for dk, dv in demands.items():
-#         for period in dv.get('periods'):
-#             op.execute('INSERT INTO "demand" (id, demand_scenario_id, period, "demand_A", "demand_B", "demand_C") '
-#                        'VALUES ({}, {}, {}, {}, {}, {});'
-#                        .format('default', dv.get("scenario_id"),
-#                                list(period.keys())[0], list(period.values())[0][0],
-#                                list(period.values())[0][1], list(period.values())[0][2]))
-#
-# ## FILL IN DEMAND TABLE!!!!!
-# ## FILL IN DEMAND TABLE!!!!!
-# ## FILL IN DEMAND TABLE!!!!!
-# ## FILL IN DEMAND TABLE!!!!!
+    # # custom commands
+    # # add default admin
+    # op.execute("INSERT INTO \"user\" (id, is_admin, username, display_name, email, password_hash) "
+    #            "VALUES (default, TRUE, 'admin', 'баце Марчев', 'filipov.bogomil@gmal.com', "
+    #            "'pbkdf2:sha256:150000$4cxvcwnI$dd8e2193d11aed58163e6e2fbe57283cf69cb3dd"
+    #            "af24dec0b4ae8b579112bf29');")
+    #
+    # # populate products
+    # for product in [(1, 'Кисело мляко 1'), (2, 'Кисело мляко 2'), (3, 'Кисело мляко 3')]:
+    #     op.execute(f"INSERT INTO \"product\" (id, name) VALUES ({product[0]}, '{product[1]}');")
+    #
+    # # populate scenario per product
+    # for product in [1, 2, 3]:
+    #     cost_materials = product + 2
+    #
+    #     for period in range(1, 21):
+    #         cost_unpredicted = 0
+    #
+    #         op.execute('INSERT INTO "scenario_per_product" (id, demand_scenario_id, period, product_id, '
+    #                    'demand_quantity, sensitivity_price, sensitivity_quality, sensitivity_marketing, '
+    #                    'correction_cost_labor, correction_cost_materials_for_one_product, '
+    #                    'cost_unpredicted, cost_materials_for_one_product, cost_labor, investment_for_one_marketing, '
+    #                    'investment_for_one_quality, quality_index_min, quality_index_max, marketing_index_min, '
+    #                    'marketing_index_max, marketing_keep_effect, base_value_rand_quality, cost_transport, '
+    #                    'cost_storage, cost_product_manager, cost_new_product_manager, price_research, max_price) '
+    #                    f'VALUES (default, 1, {period}, {product}, 3850, 1, 1.05, 0.95, 1, 1, {cost_unpredicted}, '
+    #                    f'{cost_materials}, 5, 200, 1000, 2, 5, 2, 5, 0.5, 0.7, 1.5, 0.5, 1000, 1500, 500, 50);')
+    #
+    # # populate scenario per period
+    # for period in range(1, 21):
+    #     op.execute('INSERT INTO "scenario_per_period" (id, demand_scenario_id, period, cost_fixed_administrative, '
+    #                'interest_credit, interest_overdraft) '
+    #                f'VALUES (default, 1, {period}, 5000, 0.05, 0.1);')
+    # # ### end Alembic commands ###
+

@@ -1,4 +1,6 @@
 from functools import wraps
+import math
+import random
 
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user, login_required
@@ -6,12 +8,13 @@ from werkzeug.urls import url_parse
 
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm, ScenarioForm
-from app.models import User, Game, Period, Scenario, Userinput, Product
+from app.models import Game, Period, PeriodTotals, Product, ScenarioPerProduct, ScenarioPerPeriod, User, Userinput
 
 PLAYERS_PER_GAME = 10
 SCENARIO_ID = 1
 AUTO_APPROVE_RESULTS = True
 AUTO_PUBLISH_RESULTS = False
+DEFAULT_START_PRODUCTION = 100
 
 
 def admin_required(func):
@@ -20,7 +23,6 @@ def admin_required(func):
         if not current_user.is_admin:
             return current_app.login_manager.unauthorized()
         return func(*args, **kwargs)
-
     return decorated_view
 
 
@@ -122,6 +124,9 @@ def current_period_product(product):
 @login_required
 @admin_required
 def calculate_period_results():
+    """
+    Calculate results for all active games that have all their inputs approved """
+
     games = Game.query.filter_by(is_active=True).all()
     periods = Period.query.all()
 
@@ -133,7 +138,7 @@ def calculate_period_results():
                        for i in range(len(game.players.all()))]
 
         # all user inputs in game for current period are approved
-        if all([input.approved_by_admin for i in game_inputs for input in i]):
+        if all([i.approved_by_admin for game_i in game_inputs for i in game_i]):
             _calculate_period_results(game)
 
     return render_template('calculate_period_results.html', games=approved_games, periods=periods)
@@ -195,7 +200,7 @@ def calculate_period_product_results():
 @login_required
 @admin_required
 def reveiw_scenario(product, period):
-    scenario = Scenario.query.filter_by(product_id=product, period=period).first_or_404()
+    scenario = ScenarioPerProduct.query.filter_by(product_id=product, period=period).first_or_404()
     product = Product.query.filter_by(id=product).first_or_404()
     form = ScenarioForm(obj=scenario)
     if form.validate_on_submit():
@@ -211,7 +216,7 @@ def reveiw_scenario(product, period):
 @login_required
 @admin_required
 def scenarios_list():
-    scenarios = Scenario.query.order_by(Scenario.period, Scenario.product_id).all()
+    scenarios = ScenarioPerProduct.query.order_by(ScenarioPerProduct.period, ScenarioPerProduct.product_id).all()
     return render_template('scenario_list.html', scenarios=scenarios)
 
 
@@ -249,7 +254,8 @@ def register():
         products = Product.query.all()
         for product in products:
             initial_period = Period(id=f'{game.id}_{user.id}_1_{product.id}', game_id=game.id,
-                                    period_number=1, product_id=product.id)
+                                    period_number=1, product_id=product.id,
+                                    products_in_stock_beginning_of_period=DEFAULT_START_PRODUCTION)
             user.periods.append(initial_period)
 
         db.session.add(user)
@@ -261,43 +267,248 @@ def register():
 
 
 # funks
-def _calculate_period_results(game):
+def _calculate_period_results(game) -> None:
+
+    total_combined_score = 0
+
     for player in game.players:
-        for input in player.userinput.filter_by(period_number=game.current_period).all():
+
+        # fill in available data for current period per player
+        current_player_period = PeriodTotals.query.filter_by(
+            id=f'{game.id}_{player.id}_{game.current_period}').first()
+
+        scenario_period = ScenarioPerPeriod.query.filter_by(
+                demand_scenario_id=game.demand_scenario_id, period=game.current_period).first()
+
+        total_administrative_costs = 0
+        total_production_quantity = 0
+
+        for player_input in player.userinput.filter_by(period_number=game.current_period).all():
+
+            rand = random.random()
 
             # scenario for current period current product
-            scenario = Scenario.query.filter_by(
+            scenario = ScenarioPerProduct.query.filter_by(
                 demand_scenario_id=game.demand_scenario_id, period=game.current_period,
-                product_id=input.product_id).first()
+                product_id=player_input.product_id).first()
+
+            previous_period = None if scenario.period == 1 else Period.query.filter_by(
+                id=f'{game.id}_{player.id}_{game.current_period-1}_{player_input.product_id}').first()
+
+            marketing_research_marketing_costs = 1 if player_input.marketing_research_marketing_costs else 0
+            marketing_research_price = 1 if player_input.marketing_research_price else 0
+            marketing_research_quality = 1 if player_input.marketing_research_quality else 0
+            marketing_research_sales = 1 if player_input.marketing_research_sales else 0
+
+            marketing_index = calculate_marketing_index(previous_period, scenario, player_input)
+            quality_budget = calculate_quality_budget(previous_period, scenario, player_input, rand)
+            quality_index = calculate_quality_index(quality_budget, previous_period, scenario)
+
+            # fill in available data for current period per product
+            current_prod_period = Period.query.filter_by(
+                id=f'{game.id}_{player.id}_{game.current_period}_{player_input.product_id}').first()
+
+            sell_price = player_input.sell_price
+            current_prod_period.sell_price = sell_price
+
+            recalc_marketing = marketing_index * scenario.sensitivity_marketing
+            current_prod_period.recalc_marketing = recalc_marketing
+
+            recalc_quality = quality_index * scenario.sensitivity_quality
+            current_prod_period.recalc_quality = recalc_quality
+
+            recalc_price = sell_price * scenario.sensitivity_price
+            current_prod_period.recalc_price = recalc_price
+
+            combined_score = recalc_marketing * recalc_quality * recalc_price
+            current_prod_period.combined_score = combined_score
+            total_combined_score += combined_score
+
+            # fill in available data for current period
+            current_prod_period = Period.query.filter_by(
+                id=f'{game.id}_{player.id}_{game.current_period}_{player_input.product_id}').first()
+
+            current_prod_period.userinput_id = player_input.id
+            current_prod_period.random_value = rand
+
+            # Q&M indexes
+            current_prod_period.index_marketing = marketing_index
+            current_prod_period.index_quality = quality_index
+
+            #  production costs
+            labor_costs = player_input.produce_quantity * scenario.cost_labor * scenario.correction_cost_labor
+            current_prod_period.labor_costs = labor_costs
+
+            materials_costs = (player_input.produce_quantity * scenario.cost_materials_for_one_product
+                               * scenario.correction_cost_materials_for_one_product)
+            current_prod_period.material_costs = materials_costs
+
+            total_production_cost = labor_costs + materials_costs
+            current_prod_period.total_production_cost = total_production_cost
+
+            #  non-production costs
+            current_prod_period.marketing_costs = player_input.marketing_costs
+            current_prod_period.research_and_development_costs = player_input.research_and_development_costs
+
+            transport_costs = player_input.produce_quantity * scenario.cost_transport
+            current_prod_period.transport_costs = transport_costs
+
+            storage_costs = player_input.produce_quantity * scenario.cost_storage
+            current_prod_period.storage_costs = storage_costs
+
+            is_producing = True if player_input.produce_quantity else False
+            current_prod_period.is_producing = is_producing
+            was_produsing = previous_period.is_producing if previous_period else False
+
+            product_manager_costs = (scenario.cost_product_manager
+                                     if was_produsing else scenario.cost_new_product_manager) \
+                if is_producing else 0
+            current_prod_period.product_manager_costs = product_manager_costs
+
+            marketing_research_costs = (
+                    marketing_research_marketing_costs + marketing_research_price
+                    + marketing_research_quality + marketing_research_sales) * scenario.price_research
+            current_prod_period.marketing_research_costs = marketing_research_costs
+
+            # todo: interest_costs
+
+            #administrative costs
+            current_prod_period.other_costs = scenario.cost_unpredicted
+            total_administrative_costs += scenario.cost_unpredicted
+
+            total_non_production_costs = (
+                player_input.marketing_costs + player_input.research_and_development_costs +
+                transport_costs + storage_costs + product_manager_costs + marketing_research_costs
+                + scenario.cost_unpredicted  # + interest_costs
+            )
+            current_prod_period.total_non_production_costs = total_non_production_costs
+
+            current_prod_period.total_costs = (total_production_cost + total_non_production_costs)
+
+            # budgets
+            previous_period_consolidated_rnd_budget = previous_period.consolidated_rnd_budget \
+                if previous_period else 0
+            current_prod_period.consolidated_rnd_budget = previous_period_consolidated_rnd_budget + quality_budget
+
+            previous_period_consolidated_marketing_budget = previous_period.consolidated_marketing_budget \
+                if previous_period else 0
+            current_prod_period.consolidated_marketing_budget = (previous_period_consolidated_marketing_budget
+                                                              + player_input.marketing_costs)
+
+            # researches
+            current_prod_period.research_price = marketing_research_price
+            current_prod_period.research_marketing = marketing_research_marketing_costs
+            current_prod_period.research_quality = marketing_research_quality
+            current_prod_period.research_sales = marketing_research_sales
+
+            db.session.add(current_prod_period)
+            db.session.commit()
+
+        # for player_input in player.userinput.filter_by(period_number=game.current_period).all():
+
+        total_administrative_costs += scenario_period.cost_fixed_administrative
+        db.session.add(current_player_period)
+        db.session.commit()
 
 
-            produce_quantity = input.produce_quantity
-            sell_price = input.sell_price
+    # second iteration after we have total_combined_score
+    total_unsatisfied_demand = 0
+    for player in game.players:
+        for player_input in player.userinput.filter_by(period_number=game.current_period).all():
 
-            marketing_costs = input.marketing_costs
+            scenario = ScenarioPerProduct.query.filter_by(
+                demand_scenario_id=game.demand_scenario_id, period=game.current_period,
+                product_id=player_input.product_id).first()
 
-            research_and_development_costs = input.research_and_development_costs
+            current_prod_period = Period.query.filter_by(
+                id=f'{game.id}_{player.id}_{game.current_period}_{player_input.product_id}').first()
 
-            marketing_research_marketing_costs = 1 if input.marketing_research_marketing_costs else 0
-            marketing_research_price = 1 if input.marketing_research_price else 0
-            marketing_research_quality = 1 if input.marketing_research_quality else 0
-            marketing_research_sales = 1 if input.marketing_research_sales else 0
+            supply = player_input.produce_quantity + current_prod_period.products_in_stock_beginning_of_period
 
-            if scenario.period == 1:
-                previous_period_marketing_index = scenario.marketing_index
-            marketing_index = marketing_costs / (scenario.investment_for_one_marketing + (previous_period_marketing_index * scenario.marketing_keep_effect)
+            market_share = total_combined_score / current_prod_period.combined_score
+            current_prod_period.market_share = market_share
 
-            consolidated_RnD_budget = None
-            quality_index = None
-            quality_index = None
-            quality_index = None
-            quality_index = None
-            quality_index = None
+            demand = math.floor(scenario.demand_quantity * market_share)
+            current_prod_period.demand = demand
+
+            direct_sells = min(supply, demand)
+            current_prod_period.direct_sells = direct_sells
+
+            unsatisfied_demand = demand - direct_sells
+            current_prod_period.unsatisfied_demand = unsatisfied_demand
+            total_unsatisfied_demand += unsatisfied_demand
+
+            # add administrative costs by product
+
+            db.session.add(current_prod_period)
+            db.session.commit()
+
+    # third iteration after we have total_unsatisfied_demand
+    for player in game.players:
+        for player_input in player.userinput.filter_by(period_number=game.current_period).all():
+            current_prod_period = Period.query.filter_by(
+                id=f'{game.id}_{player.id}_{game.current_period}_{player_input.product_id}').first()
+
+            supply = player_input.produce_quantity + current_prod_period.products_in_stock_beginning_of_period
+            unsatisfied_demand = current_prod_period.unsatisfied_demand
+            direct_sells = current_prod_period.direct_sells
+            market_share = current_prod_period.market_share
+
+            secondary_sells = min(math.floor(market_share * total_unsatisfied_demand), (supply-direct_sells)) \
+                if unsatisfied_demand == 0 else 0
+            current_prod_period.secondary_sells = secondary_sells
+
+            total_sells = direct_sells + secondary_sells
+            current_prod_period.total_sells = total_sells
+
+            income_from_sells = current_prod_period.sell_price * total_sells
+            current_prod_period.income_from_sells = income_from_sells
+
+            products_in_stock_end_of_period = supply - total_sells
+            current_prod_period.products_in_stock_end_of_period = products_in_stock_end_of_period
+
+            gross_proffit = income_from_sells - current_prod_period.total_production_cost
+            current_prod_period.gross_proffit = gross_proffit
+
+            net_proffit = gross_proffit - current_prod_period.total_non_production_costs
+            current_prod_period.net_proffit = net_proffit
+
+            db.session.add(current_prod_period)
+            db.session.commit()
+
+        # calculate_user_profit(player, game)
+
+def calculate_user_profit(player, game):
+    # TODO:!!!REMOVE THE BEWLOW PDB BREAKPOINT
+    import ipdb; ipdb.set_trace()
+    # TODO:!!!REMOVE THE ABOVE PDB BREAKPOINT
+
+def calculate_marketing_index(previous_period, scenario, player_input):
+    previous_period_marketing_index = previous_period.index_marketing \
+        if previous_period else scenario.marketing_index_min
+    marketing_index = player_input.marketing_costs / (
+            scenario.investment_for_one_marketing + (previous_period_marketing_index
+                                                     * scenario.marketing_keep_effect))
+    marketing_index = scenario.marketing_index_max \
+        if marketing_index > scenario.marketing_index_max else marketing_index
+    marketing_index = scenario.marketing_index_min \
+        if marketing_index < scenario.marketing_index_min else marketing_index
+    return marketing_index
 
 
-            # TODO:!!!REMOVE THE BEWLOW PDB BREAKPOINT
-            import ipdb; ipdb.set_trace()
-            # TODO:!!!REMOVE THE ABOVE PDB BREAKPOINT
+def calculate_quality_budget(previous_period, scenario, player_input, rand):
+    consolidated_rnd_budget = previous_period.consolidated_rnd_budget \
+        if previous_period else 0
+    return (player_input.research_and_development_costs + consolidated_rnd_budget) * \
+           (rand * (1 - scenario.base_value_rand_quality) + scenario.base_value_rand_quality)
+
+
+def calculate_quality_index(quality_budget, previous_period, scenario):
+    previous_period_quality_index = previous_period.index_quality if previous_period else 0
+    quality_index = previous_period_quality_index + (quality_budget / scenario.investment_for_one_quality)
+    quality_index = scenario.quality_index_max if quality_index > scenario.quality_index_max else quality_index
+    quality_index = scenario.quality_index_min if quality_index < scenario.quality_index_min else quality_index
+    return quality_index
 
 
 def get_or_create(session, model, **kwargs):
