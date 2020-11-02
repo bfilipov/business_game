@@ -68,9 +68,9 @@ class RegistrationForm(FlaskForm):
 class UserInputForm(FlaskForm):
 
     produce_quantity = IntegerField('Производство', validators=[NumberRange(min=0, max=10000)])  # production
-    sell_price = IntegerField('Цена', validators=[NumberRange(min=1, max=100)])  # production  # price
-    marketing_costs = IntegerField('Бюджет за маркетинг', validators=[NumberRange(min=1, max=100)])  # production  # marketing budget
-    research_and_development_costs = IntegerField('R & D', validators=[NumberRange(min=1, max=100)])  # production  # R & D
+    sell_price = IntegerField('Цена', validators=[NumberRange(min=1, max=50)])  # production  # price
+    marketing_costs = IntegerField('Бюджет за маркетинг', validators=[NumberRange(min=0, max=10000)])  # production  # marketing budget
+    research_and_development_costs = IntegerField('R & D', validators=[NumberRange(min=0, max=10000)])  # production  # R & D
 
     marketing_research_price = BooleanField('Проучване на цени', validators=[])  # production  # проучване на цени
     marketing_research_sales = BooleanField('Проучване на продажби', validators=[])  # production  # проучване на продажби
@@ -82,6 +82,7 @@ class UserInputForm(FlaskForm):
 
 class ReviewUserInputForm(UserInputForm):
     approved_by_admin = BooleanField('Approved', validators=[])
+    submit = SubmitField('Submit')
 
 
 class ScenarioForm(FlaskForm):
@@ -124,3 +125,57 @@ class ScenarioForm(FlaskForm):
     max_price = FloatField('макс цена', validators=[])  # макс цена
 
     submit = SubmitField('Submit')
+
+
+class ReviewPeriodForm(FlaskForm):
+    sell_price = FloatField('sell_price', validators=[])
+    income_from_sells = FloatField('income_from_sells', validators=[])
+    gross_proffit = FloatField('gross_proffit', validators=[])  # Брутна печалба
+    net_proffit = FloatField('net_proffit', validators=[])  # Нетна печалба
+    accumulated_proffit = FloatField('accumulated_proffit', validators=[])  # натрупана печалба до момента
+    labor_costs = FloatField('labor_costs', validators=[])  # Труд
+    material_costs = FloatField('material_costs', validators=[])  # матeриали
+    total_production_cost = FloatField('total_production_cost', validators=[])  # матeриали
+    marketing_costs = FloatField('marketing_costs', validators=[])  # маркетинг // marketing budget
+    research_and_development_costs = FloatField('research_and_development_costs', validators=[])  # R & D
+    transport_costs = FloatField('transport_costs', validators=[])  # транспорт
+    storage_costs = FloatField('storage_costs', validators=[])  # складови
+    administrative_costs = FloatField('administrative_costs', validators=[])  # административни
+    marketing_research_costs = FloatField('разходи за проучвания', validators=[])  # разходи за проучвания
+    interest_costs = FloatField('лихви разхвърляни пропорционално', validators=[])  # лихви (разхвърляни пропорционално)
+    other_costs = FloatField('други (от сценария)', validators=[])  # други (от сценария)
+    total_non_production_costs = FloatField('total_non_production_costs', validators=[])  # общо
+    # products_sold = IntegerField('products_sold', validators=[])
+    products_in_stock_beginning_of_period = IntegerField('останали на склад в началото на периода',
+                                                         validators=[])  # останали на склад в началото на периода
+    products_in_stock_end_of_period = IntegerField('останали на склад след края на периода',
+                                                   validators=[])  # останали на склад след края на периода
+    research_price = IntegerField('research_price', validators=[])
+    research_marketing = IntegerField('research_marketing', validators=[])
+    research_quality = IntegerField('research_quality', validators=[])
+    research_sales = IntegerField('research_sales', validators=[])
+    index_marketing = FloatField('index_marketing', validators=[])
+    index_quality = FloatField('index_quality', validators=[])
+    consolidated_rnd_budget = FloatField('чувствителност цена',
+                                         validators=[])  # натрупан бюджет за R & D // Инвестиция в R & D - натруп
+    consolidated_marketing_budget = FloatField('чувствителност цена', validators=[])  # натрупан бюджет за маркетинг
+    total_costs = FloatField('пълна себестойност - (произвпдствени + непроизводствени)',
+                             validators=[])  # пълна себестойност - (произвпдствени + непроизводствени)
+    total_costs_per_one = FloatField('пълна себестойност за брой', validators=[])  # пълна себестойност за брой
+    product_manager_costs = FloatField('# разходи за продуктов мениджър за период/продукт',
+                                       validators=[])  # разходи за продуктов мениджър за период/продукт
+    is_producing = BooleanField('има ли производство', validators=[])  # има ли производство
+    recalc_quality = FloatField('recalc_quality', validators=[])
+    recalc_marketing = FloatField('recalc_marketing', validators=[])
+    recalc_price = FloatField('recalc_price', validators=[])
+    combined_score = FloatField('combined_score', validators=[])
+    market_share = FloatField('market_share', validators=[])
+    demand = IntegerField('demand', validators=[])
+    direct_sells = IntegerField('direct_sells', validators=[])
+    unsatisfied_demand = IntegerField('unsatisfied_demand', validators=[])
+    secondary_sells = IntegerField('secondary_sells', validators=[])
+    total_sells = IntegerField('total_sells / Продажби (идват от пазара)', validators=[])
+    random_value = FloatField('random_value', validators=[])
+
+    submit = SubmitField('Submit')
+

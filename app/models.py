@@ -31,6 +31,7 @@ class User(UserMixin, db.Model):
 
     # game specifics
     periods = db.relationship('Period', backref='player', lazy='dynamic')
+    period_total = db.relationship('PeriodTotal', backref='player_', lazy='dynamic')
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
 
     def __repr__(self):
@@ -101,7 +102,7 @@ class Userinput(db.Model):
     approved_by_admin = db.Column(db.Boolean, default=False)
 
 
-class PeriodTotals(db.Model):
+class PeriodTotal(db.Model):
     # id format -> str:
     # 'game_id'_'user_id'_'period_number'
     id = db.Column(db.String(64), primary_key=True)
@@ -113,14 +114,20 @@ class PeriodTotals(db.Model):
     # used for calculations on current period
     money_total_begining_of_period = db.Column(db.Float)
     money_total_end_of_period = db.Column(db.Float)
+
     total_production_quantity = db.Column(db.Integer)
+
     total_administrative_costs = db.Column(db.Float)
     total_interest_costs = db.Column(db.Float)
 
     # finansial
     money_total = db.Column(db.Float)  # разполагаеми средства
     credit_total = db.Column(db.Float)  # Кредит/депозит
-    overdraft = db.Column(db.Float)  # овърдрафт
+    overdraft = db.Column(db.Float, default=0)  # овърдрафт
+
+    # user
+    make_deposit = db.Column(db.Integer)
+    take_credit = db.Column(db.Integer)
 
 
 class Period(db.Model):
@@ -164,7 +171,6 @@ class Period(db.Model):
     total_non_production_costs = db.Column(db.Float)  # общо
 
     # QUANTITY
-    products_sold = db.Column(db.Integer)  # Продажби (идват от пазара)
     products_in_stock_beginning_of_period = db.Column(db.Integer)  # останали на склад в началото на периода
     products_in_stock_end_of_period = db.Column(db.Integer)  # останали на склад след края на периода
 
@@ -181,7 +187,8 @@ class Period(db.Model):
     consolidated_rnd_budget = db.Column(db.Float)  # натрупан бюджет за R & D // Инвестиция в R & D - натруп
     consolidated_marketing_budget = db.Column(db.Float)  # натрупан бюджет за маркетинг
 
-    total_costs = db.Column(db.Float)  # пълна себестойност - (произвпдствени + непроизводствени) / брой продукция
+    total_costs = db.Column(db.Float)  # пълна себестойност - (произвпдствени + непроизводствени)
+    total_costs_per_one = db.Column(db.Float)  # пълна себестойност за брой
     product_manager_costs = db.Column(db.Float)  # разходи за продуктов мениджър за период/продукт
     is_producing = db.Column(db.Boolean)  # има ли производство
 
@@ -196,10 +203,12 @@ class Period(db.Model):
     direct_sells = db.Column(db.Integer)
     unsatisfied_demand = db.Column(db.Integer)
     secondary_sells = db.Column(db.Integer)
-    total_sells = db.Column(db.Integer)
+    total_sells = db.Column(db.Integer)  # Продажби (идват от пазара)
 
     # random
     random_value = db.Column(db.Float)
+
+    confirmed_by_admin = db.Column(db.Boolean)
 
     def __repr__(self):
         return f'<Period {self.id}>'
@@ -267,8 +276,9 @@ class ScenarioPerProduct(db.Model):
     # max_loan = db.Column()  # макс. Размер на изтеглен заем за период
     # interest_credit = db.Column(db.Float)  # лихвен процент кредит
     # interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
-
     max_price = db.Column(db.Float)  # макс цена
+
+    # ------------------
 
     # # custom commands
     # # add default admin

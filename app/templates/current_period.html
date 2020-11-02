@@ -12,8 +12,12 @@
             <strong>Period:{{period.period_number}}</strong>
             <strong>Product:{{period.product_id}}</strong>
             <p><a href="/game/{{user.game_id}}/user/{{user.id}}/product/{{period.product_id}}">
-               Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
+               Потвърти входни данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
                 Продукт: {{period.product_id}}</a></p>
+            <p><a href="/confirm/game/{{user.game_id}}/user/{{user.id}}/product/{{period.product_id}}">
+                Потвърди изходни данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
+                Продукт: {{period.product_id}}
+            </a></p>
         {% endfor %}
     {% else %}
         <p>Team: {{user.username}}</p>

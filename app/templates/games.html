@@ -4,7 +4,7 @@
 
         <p> Game id - {{game.id}}  </p>
         <p> Current period - {{game.current_period}}  </p>
-
+        <hr>
         {% for player in game.players %}
                 <a href="/game/{{game.id}}/user/{{player.id}}">
                     View Game for <strong>player id: {{player.id}}
@@ -12,6 +12,5 @@
                 </a>
                 <hr>
         {% endfor %}
-
     {% endfor %}
 {% endblock %}
