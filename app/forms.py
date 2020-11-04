@@ -14,23 +14,23 @@ class LoginForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     repeat_password = PasswordField('Repeat Password',
                                     validators=[DataRequired(), EqualTo('password')])
 
     display_name = StringField('Display name', validators=[DataRequired()])
 
-    member1 = StringField('Member 1', validators=[DataRequired()])
-    member2 = StringField('Member 2')
-    member3 = StringField('Member 3')
-    member4 = StringField('Member 4')
-    member5 = StringField('Member 5')
-    member6 = StringField('Member 6')
-    member7 = StringField('Member 7')
-    member8 = StringField('Member 8')
-    member9 = StringField('Member 9')
-    member10 = StringField('Member 10')
+    member1 = StringField('Student 1', validators=[DataRequired()])
+    member2 = StringField('Student 2')
+    member3 = StringField('Student 3')
+    member4 = StringField('Student 4')
+    member5 = StringField('Student 5')
+    member6 = StringField('Student 6')
+    member7 = StringField('Student 7')
+    member8 = StringField('Student 8')
+    member9 = StringField('Student 9')
+    member10 = StringField('Student 10')
 
     submit = SubmitField('Register')
 
@@ -39,38 +39,23 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Username is already taken.')
 
+    def validate_display_name(self, display_name):
+        user = User.query.filter_by(display_name=display_name.data).first()
+        if user is not None:
+            raise ValidationError('Display name is already taken.')
+
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Email is already taken.')
 
 
-# class PeriodForm(FlaskForm):
-#     product_a_produced = IntegerField(
-#         'Produce A', validators=[NumberRange(min=1, max=100, message='пробвай пак')])
-#     product_b_produced = IntegerField('Produce B', validators=[NumberRange(min=1, max=100)])
-#     product_c_produced = IntegerField('Produce C', validators=[NumberRange(min=1, max=100)])
-#
-#     price_product_a = IntegerField('Price A', validators=[NumberRange(min=1, max=100)])
-#     price_product_b = IntegerField('Price B', validators=[NumberRange(min=1, max=100)])
-#     price_product_c = IntegerField('Price C', validators=[NumberRange(min=1, max=100)])
-#
-#     product_a_marketing = IntegerField('Marketing A', validators=[NumberRange(min=1, max=100)])
-#     product_b_marketing = IntegerField('Marketing B', validators=[NumberRange(min=1, max=100)])
-#     product_c_marketing = IntegerField('Marketing C', validators=[NumberRange(min=1, max=100)])
-#
-#     product_a_quality_investment = IntegerField('Quality A investment', validators=[NumberRange(min=1, max=100)])
-#     product_b_quality_investment = IntegerField('Quality B investment', validators=[NumberRange(min=1, max=100)])
-#     product_c_quality_investment = IntegerField('Quality C investment', validators=[NumberRange(min=1, max=100)])
-#
-#     submit = SubmitField('Submit')
-
 class UserInputForm(FlaskForm):
 
-    produce_quantity = IntegerField('Производство', validators=[NumberRange(min=0, max=10000)])  # production
-    sell_price = IntegerField('Цена', validators=[NumberRange(min=1, max=50)])  # production  # price
-    marketing_costs = IntegerField('Бюджет за маркетинг', validators=[NumberRange(min=0, max=10000)])  # production  # marketing budget
-    research_and_development_costs = IntegerField('R & D', validators=[NumberRange(min=0, max=10000)])  # production  # R & D
+    produce_quantity = IntegerField('Производство', validators=[NumberRange(min=0, max=2000)])  # production
+    sell_price = IntegerField('Цена', validators=[NumberRange(min=10, max=50)])  # production  # price
+    marketing_costs = IntegerField('Бюджет за маркетинг', validators=[NumberRange(min=0, max=5000)])  # production  # marketing budget
+    research_and_development_costs = IntegerField('R & D', validators=[NumberRange(min=0, max=5000)])  # production  # R & D
 
     marketing_research_price = BooleanField('Проучване на цени', validators=[])  # production  # проучване на цени
     marketing_research_sales = BooleanField('Проучване на продажби', validators=[])  # production  # проучване на продажби
@@ -85,7 +70,7 @@ class ReviewUserInputForm(UserInputForm):
     submit = SubmitField('Submit')
 
 
-class ScenarioForm(FlaskForm):
+class ScenarioPerPeriodForm(FlaskForm):
 
     demand_quantity = IntegerField('брой продажби', validators=[])  # брой продажби
     sensitivity_price = FloatField('чувствителност цена', validators=[])  # чувствителност цена
@@ -124,6 +109,13 @@ class ScenarioForm(FlaskForm):
     interest_overdraft = FloatField('лихвен процент овърдрафт', validators=[])  # лихвен процент овърдрафт
     max_price = FloatField('макс цена', validators=[])  # макс цена
 
+    submit = SubmitField('Submit')
+
+
+class ScenarioPerProductForm(FlaskForm):
+    cost_fixed_administrative = FloatField('фиксирани административни разходи', validators=[])  # фиксирани административни разходи
+    interest_credit = FloatField('лихвен процент кредит (десетична дроб)', validators=[])  # лихвен процент кредит
+    interest_overdraft = FloatField('лихвен процент овърдрафт (десетична дроб)', validators=[])  # лихвен процент овърдрафт
     submit = SubmitField('Submit')
 
 
@@ -177,5 +169,10 @@ class ReviewPeriodForm(FlaskForm):
     total_sells = IntegerField('total_sells / Продажби (идват от пазара)', validators=[])
     random_value = FloatField('random_value', validators=[])
 
+    submit = SubmitField('Submit')
+
+
+class ConfirmCurrentPeriodResultsForm(FlaskForm):
+    approved = BooleanField('Approved?')
     submit = SubmitField('Submit')
 

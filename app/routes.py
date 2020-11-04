@@ -7,14 +7,15 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm, ScenarioForm, ReviewPeriodForm
+from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm, ScenarioPerProductForm, \
+    ScenarioPerPeriodForm, ReviewPeriodForm, ConfirmCurrentPeriodResultsForm
 from app.models import Game, Period, PeriodTotal, Product, ScenarioPerProduct, ScenarioPerPeriod, User, Userinput
 
 PLAYERS_PER_GAME = 10
 SCENARIO_ID = 1
 AUTO_APPROVE_RESULTS = True
-AUTO_PUBLISH_RESULTS = False
-DEFAULT_START_PRODUCTION = 100
+AUTO_CONFIRM_PERIOD = True
+DEFAULT_START_PRODUCTION = 0
 STARTING_CAPITAL = 20000
 
 
@@ -112,37 +113,81 @@ def current_period_product(product):
         db.session.commit()
         flash(f'Successfully submitted form!')
 
-    if AUTO_PUBLISH_RESULTS:
-        pass
-        # todo: add period calculation here
-
     return render_template('current_period_product.html', user=user,
                            current_period=game.current_period, form=form, product=product)
 
 
 # ADMIN :
+@app.route('/confirm_current_period/game/<gameid>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def confirm_current_period(gameid):
+    """
+    Calculate results for all active games that have all their inputs approved """
+    game = Game.query.filter_by(id=gameid).first_or_404()
+    players = game.players.all()
+    products = Product.query.all()
+    periods = [period
+               for player in players
+               for period in player.periods.filter_by(period_number=game.current_period).all()]
+
+    form = None
+    if periods and all([p.confirmed_by_admin for p in periods]):
+        form = ConfirmCurrentPeriodResultsForm()
+        if form.validate_on_submit():
+            if form.approved.data:
+                game.current_period += 1
+                db.session.add(game)
+                db.session.flush()
+
+                for player in players:
+                    player.game_id = game.id
+                    for product in products:
+
+                        previous_period = player.periods.filter_by(
+                            period_number=game.current_period-1, product_id=product.id).first()
+
+                        next_period = Period(
+                            id=f'{game.id}_{player.id}_{game.current_period}_{product.id}', game_id=game.id,
+                            period_number=game.current_period, product_id=product.id,
+                            products_in_stock_beginning_of_period=previous_period.products_in_stock_end_of_period)
+                        player.periods.append(next_period)
+
+                    previous_period_total = player.period_total.filter_by(
+                        period_number=game.current_period-1).first()
+
+                    next_period_total = PeriodTotal(
+                        id=f'{game.id}_{player.id}_{game.current_period}', game_id=game.id,
+                        period_number=game.current_period)
+                    next_period_total.money_total_begining_of_period = previous_period_total.money_total_end_of_period
+                    #todo calculate credit
+                    next_period_total.credit_total = previous_period_total.credit_total - 0
+                    player.period_total.append(next_period_total)
+                    db.session.add(player)
+                    db.session.commit()
+                flash(f'Current game period is {game.current_period}')
+                flash(f'Successfully updated game state!')
+
+    return render_template('confirm_game.html', game=game, periods=periods, form=form, players=players)
+
+
 @app.route('/calculate_period_results')
 @login_required
 @admin_required
 def calculate_period_results():
     """
     Calculate results for all active games that have all their inputs approved """
-
     games = Game.query.filter_by(is_active=True).all()
-    periods = Period.query.all()
-
-    approved_games = []
     for game in games:
         period_n = game.current_period
 
         game_inputs = [game.players[i].userinput.filter_by(period_number=period_n).all()
                        for i in range(len(game.players.all()))]
 
-        # all user inputs in game for current period are approved
+        # if all user inputs in game for current period are approved
         if all([i.approved_by_admin for game_i in game_inputs for i in game_i]):
             _calculate_period_results(game)
-
-    return render_template('calculate_period_results.html', games=approved_games, periods=periods)
+    return redirect(url_for('games'))
 
 
 @app.route('/games')
@@ -227,28 +272,45 @@ def confirm_period_results(game, user, product):
                            user=user, product=product, form=form)
 
 
-@app.route('/admin/reveiw_scenario/product<product>/period<period>/', methods=['GET', 'POST'])
+@app.route('/admin/scenarios/scenario_id/<scenario_id>/period/<period>', methods=['GET', 'POST'])
 @login_required
 @admin_required
-def reveiw_scenario(product, period):
-    scenario = ScenarioPerProduct.query.filter_by(product_id=product, period=period).first_or_404()
-    product = Product.query.filter_by(id=product).first_or_404()
-    form = ScenarioForm(obj=scenario)
+def reveiw_scenario_period(scenario_id, period):
+    scenario = ScenarioPerPeriod.query.filter_by(period=period, demand_scenario_id=scenario_id).first_or_404()
+    form = ScenarioPerProductForm(obj=scenario)
     if form.validate_on_submit():
         form.populate_obj(scenario)
         db.session.add(scenario)
         db.session.commit()
         flash(f'Successfully updated scenario')
+    return render_template('scenario_period.html', form=form, scenario=scenario)
 
-    return render_template('scenario.html', form=form, scenario=scenario, product=product)
+
+@app.route('/admin/scenarios/scenario_id/<scenario_id>/period/<period>/product/<product>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def reveiw_scenario_product(product, period, scenario_id):
+    scenario = ScenarioPerProduct.query.filter_by(product_id=product, period=period,
+                                                  demand_scenario_id=scenario_id).first_or_404()
+    product = Product.query.filter_by(id=product).first_or_404()
+    form = ScenarioPerPeriodForm(obj=scenario)
+    if form.validate_on_submit():
+        form.populate_obj(scenario)
+        db.session.add(scenario)
+        db.session.commit()
+        flash(f'Successfully updated scenario')
+    return render_template('scenario_product.html', form=form, scenario=scenario, product=product)
 
 
 @app.route('/admin/scenarios')
 @login_required
 @admin_required
 def scenarios_list():
-    scenarios = ScenarioPerProduct.query.order_by(ScenarioPerProduct.period, ScenarioPerProduct.product_id).all()
-    return render_template('scenario_list.html', scenarios=scenarios)
+    scenarios_per_product = ScenarioPerProduct.query.order_by(ScenarioPerProduct.period, ScenarioPerProduct.product_id).all()
+    scenarios_per_period = ScenarioPerPeriod.query.order_by(ScenarioPerPeriod.period).all()
+    scenario_ids = list(set([s.demand_scenario_id for s in scenarios_per_product]))
+    return render_template('scenario_list.html', scenarios_product=scenarios_per_product,
+                           scenarios_period=scenarios_per_period, scenario_ids=scenario_ids)
 
 
 @app.route('/admin/register', methods=['GET', 'POST'])
@@ -430,7 +492,8 @@ def _calculate_period_results(game) -> None:
 
             total_costs = (total_production_cost + total_non_production_costs)
             current_prod_period.total_costs = total_costs
-            current_prod_period.total_costs_per_one = total_costs / player_input.produce_quantity
+            current_prod_period.total_costs_per_one = total_costs / player_input.produce_quantity \
+                if player_input.produce_quantity else 0
 
             # budgets
             previous_period_consolidated_rnd_budget = previous_period.consolidated_rnd_budget \
@@ -474,7 +537,7 @@ def _calculate_period_results(game) -> None:
 
             supply = player_input.produce_quantity + current_prod_period.products_in_stock_beginning_of_period
 
-            market_share = total_combined_score / current_prod_period.combined_score
+            market_share = current_prod_period.combined_score / total_combined_score
             current_prod_period.market_share = market_share
 
             demand = math.floor(scenario.demand_quantity * market_share)
@@ -533,6 +596,8 @@ def _calculate_period_results(game) -> None:
 
             accumulated_proffit = previous_period.accumulated_proffit if previous_period else 0
             current_prod_period.accumulated_proffit = accumulated_proffit + net_proffit
+
+            current_prod_period.confirmed_by_admin = AUTO_CONFIRM_PERIOD
 
             db.session.add(current_prod_period)
             db.session.commit()

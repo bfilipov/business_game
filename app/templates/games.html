@@ -4,6 +4,8 @@
 
         <p> Game id - {{game.id}}  </p>
         <p> Current period - {{game.current_period}}  </p>
+        <h6><a href="/confirm_current_period/game/{{game.id}}">
+            Final Confirm Period Results for period - {{game.current_period}}</a></h6>
         <hr>
         {% for player in game.players %}
                 <a href="/game/{{game.id}}/user/{{player.id}}">
@@ -12,5 +14,8 @@
                 </a>
                 <hr>
         {% endfor %}
+
     {% endfor %}
+    <hr>
+    <a href="{{ url_for('calculate_period_results') }}"><h3>Calculate Period Results</h3></a>
 {% endblock %}

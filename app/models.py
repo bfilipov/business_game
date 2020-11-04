@@ -89,15 +89,15 @@ class Userinput(db.Model):
     # product reference
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))  # A,B,C
 
-    produce_quantity = db.Column(db.Integer)  # production
-    sell_price = db.Column(db.Integer)  # price
-    marketing_costs = db.Column(db.Integer)  # marketing budget
-    research_and_development_costs = db.Column(db.Integer)  # R & D
+    produce_quantity = db.Column(db.Integer, default=0)  # production
+    sell_price = db.Column(db.Integer, default=10)  # price
+    marketing_costs = db.Column(db.Integer, default=0)  # marketing budget
+    research_and_development_costs = db.Column(db.Integer, default=0)  # R & D
 
-    marketing_research_price = db.Column(db.Boolean)  # проучване на цени
-    marketing_research_sales = db.Column(db.Boolean)  # проучване на продажби
-    marketing_research_quality = db.Column(db.Boolean)  # проучване на качество
-    marketing_research_marketing_costs = db.Column(db.Boolean)  # проучване на разходи за маркетинг
+    marketing_research_price = db.Column(db.Boolean, default=False)  # проучване на цени
+    marketing_research_sales = db.Column(db.Boolean, default=False)  # проучване на продажби
+    marketing_research_quality = db.Column(db.Boolean, default=False)  # проучване на качество
+    marketing_research_marketing_costs = db.Column(db.Boolean, default=False)  # проучване на разходи за маркетинг
 
     approved_by_admin = db.Column(db.Boolean, default=False)
 
@@ -278,6 +278,16 @@ class ScenarioPerProduct(db.Model):
     # interest_overdraft = db.Column(db.Float)  # лихвен процент овърдрафт
     max_price = db.Column(db.Float)  # макс цена
 
+
+# def autoregister_users(file_path):
+#     with open(file_path) as f:
+#         for line in f:
+#             username, display_name, email, raw_pass = line.split()
+#
+#             # TODO:!!!REMOVE THE BEWLOW PDB BREAKPOINT
+#             import ipdb; ipdb.set_trace()
+#             # TODO:!!!REMOVE THE ABOVE PDB BREAKPOINT
+
     # ------------------
 
     # # custom commands
@@ -288,7 +298,7 @@ class ScenarioPerProduct(db.Model):
     #            "af24dec0b4ae8b579112bf29');")
     #
     # # populate products
-    # for product in [(1, 'Кисело мляко 1'), (2, 'Кисело мляко 2'), (3, 'Кисело мляко 3')]:
+    # for product in [(1, 'Обикновено'), (2, 'Уелнес'), (3, 'Лукс')]:
     #     op.execute(f"INSERT INTO \"product\" (id, name) VALUES ({product[0]}, '{product[1]}');")
     #
     # # populate scenario per product

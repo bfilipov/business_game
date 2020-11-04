@@ -1,12 +1,24 @@
 {% extends "base.html" %}
 {% block app_content %}
 
-    {% for scenario in scenarios %}
-        <a href="/admin/reveiw_scenario/product{{scenario.product_id}}/period{{scenario.period}}/">
-            Scenario for <strong>Period: {{scenario.period}} Product: {{scenario.product_id}} </strong>
-        </a>
+    {% for id in scenario_ids%}
+        <h2>Scenario id: {{id}}</h2>
+
+        <h4>Per period:</h4>
+        {% for scenario in scenarios_period %}
+            <a href="/admin/scenarios/scenario_id/{{id}}/period/{{scenario.period}}">
+                Scenario for <strong>Period: {{scenario.period}}</strong>
+            </a>
+            <hr>
+        {% endfor %}
+        <h4>Per Product:</h4>
+        {% for scenario in scenarios_product %}
+            <a href="/admin/scenarios/scenario_id/{{id}}/period/{{scenario.period}}/product/{{scenario.product_id}}">
+                Scenario for <strong>Period: {{scenario.period}} Product: {{scenario.product_id}} </strong>
+            </a>
+            <hr>
+        {% endfor %}
         <hr>
     {% endfor %}
-
 
 {% endblock %}
