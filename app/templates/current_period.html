@@ -7,6 +7,8 @@
     {% if current_user.is_admin %}
 
         <h3>Review data for <strong>Game: {{user.game_id}}</strong></h3>
+        <p><a href="/confirm_finance/game/{{user.game_id}}/user/{{user.id}}">
+               Потвърти финансови данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}</a></p>
         {% for period in periods%}
             <strong>User: {{user.id}}</strong>
             <strong>Period:{{period.period_number}}</strong>
@@ -20,12 +22,14 @@
             </a></p>
         {% endfor %}
     {% else %}
-        <p>Team: {{user.username}}</p>
-        <p>USER ID : {{user.id}}</p>
+        <p>Отбор: {{user.display_name}}</p>
         {% for product in products%}
             <p><a href="/current_period/{{product.id}}">
                 Въведете данни за продукт: {{product.name}}</a></p>
         {% endfor %}
+        <p><a href="/current_period/finance">
+            Въведете финансови данни</a></p>
+        <hr>
     {% endif %}
 
 {% endblock %}

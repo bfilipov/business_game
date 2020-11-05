@@ -5,13 +5,11 @@
 {% block app_content %}
 
     {% if current_user.is_admin %}
-        <h3>Review data for <strong>Game: {{user.game_id}}</strong>
+    <h3>Review data for <strong>Game: {{user.game_id}}</strong></h3>
             <strong>User: {{user.display_name}} ID: {{user.id}}</strong>
-            <strong>Period:{{period.period_number}}</strong>
-            <strong>Продукт:{{product.name}}</strong></h3>
+            <strong>Period:{{period_total.period_number}}</strong>
     {% else %}
         <p>Отбор {{user.display_name}}</p>
-        <h4>Данни за продукт {{product.id}} - {{product.name}}</h4>
     {% endif %}
     <hr>
 

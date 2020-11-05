@@ -62,7 +62,15 @@ class UserInputForm(FlaskForm):
     marketing_research_quality = BooleanField('Проучване на качество', validators=[])  # production  # проучване на качество
     marketing_research_marketing_costs = BooleanField('Проучване на разходи за маркетинг', validators=[])  # production  # проучване на разходи за маркетинг
 
-    submit = SubmitField('Submit')
+    submit = SubmitField('Изпращане')
+
+
+class UserInputPeriodTotal(FlaskForm):
+    deposit_credit = IntegerField('Депозирай по кредит/депозит', validators=[NumberRange(min=0, max=10000)])
+    deposit_overdraft = IntegerField('Депозирай по овердрафт', validators=[NumberRange(min=0, max=10000)])
+    take_credit = IntegerField('Изтегли нов кредит', validators=[NumberRange(min=0, max=30000)])
+
+    submit = SubmitField('Изпращане')
 
 
 class ReviewUserInputForm(UserInputForm):

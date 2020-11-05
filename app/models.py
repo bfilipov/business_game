@@ -115,6 +115,12 @@ class PeriodTotal(db.Model):
     money_total_begining_of_period = db.Column(db.Float)
     money_total_end_of_period = db.Column(db.Float)
 
+    credit_total_begining_of_period = db.Column(db.Float)  # Кредит/депозит
+    credit_total_end_of_period = db.Column(db.Float)  # Кредит/депозит
+
+    overdraft_total_begining_of_period = db.Column(db.Float)  # овърдрафт
+    overdraft_total_end_of_period = db.Column(db.Float)  # овърдрафт
+
     total_production_quantity = db.Column(db.Integer)
 
     total_administrative_costs = db.Column(db.Float)
@@ -123,11 +129,13 @@ class PeriodTotal(db.Model):
     # finansial
     money_total = db.Column(db.Float)  # разполагаеми средства
     credit_total = db.Column(db.Float)  # Кредит/депозит
-    overdraft = db.Column(db.Float, default=0)  # овърдрафт
+    overdraft_total = db.Column(db.Float, default=0)  # овърдрафт
 
     # user
-    make_deposit = db.Column(db.Integer)
-    take_credit = db.Column(db.Integer)
+    deposit_credit = db.Column(db.Integer, default=0)
+    deposit_overdraft = db.Column(db.Integer, default=0)
+    take_credit = db.Column(db.Integer, default=0)
+    input_approved_by_admin = db.Column(db.Boolean, default=False)
 
 
 class Period(db.Model):
