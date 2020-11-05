@@ -115,12 +115,6 @@ class PeriodTotal(db.Model):
     money_total_begining_of_period = db.Column(db.Float)
     money_total_end_of_period = db.Column(db.Float)
 
-    credit_total_begining_of_period = db.Column(db.Float)  # Кредит/депозит
-    credit_total_end_of_period = db.Column(db.Float)  # Кредит/депозит
-
-    overdraft_total_begining_of_period = db.Column(db.Float)  # овърдрафт
-    overdraft_total_end_of_period = db.Column(db.Float)  # овърдрафт
-
     total_production_quantity = db.Column(db.Integer)
 
     total_administrative_costs = db.Column(db.Float)
@@ -301,7 +295,7 @@ class ScenarioPerProduct(db.Model):
     # # custom commands
     # # add default admin
     # op.execute("INSERT INTO \"user\" (id, is_admin, username, display_name, email, password_hash) "
-    #            "VALUES (default, TRUE, 'admin', 'баце Марчев', 'filipov.bogomil@gmal.com', "
+    #            "VALUES (default, TRUE, 'admin', 'админ', 'filipov.bogomil@gmal.com', "
     #            "'pbkdf2:sha256:150000$4cxvcwnI$dd8e2193d11aed58163e6e2fbe57283cf69cb3dd"
     #            "af24dec0b4ae8b579112bf29');")
     #

@@ -8,7 +8,8 @@ from werkzeug.urls import url_parse
 
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm, ScenarioPerProductForm, \
-    ScenarioPerPeriodForm, ReviewPeriodForm, ConfirmCurrentPeriodResultsForm, UserInputPeriodTotal
+    ScenarioPerPeriodForm, ReviewPeriodForm, ConfirmCurrentPeriodResultsForm, UserInputPeriodTotal, \
+    ReviewUserInputPeriodTotal, DoubleConfirmForm
 from app.models import Game, Period, PeriodTotal, Product, ScenarioPerProduct, ScenarioPerPeriod, User, Userinput
 
 PLAYERS_PER_GAME = 10
@@ -16,7 +17,7 @@ SCENARIO_ID = 1
 AUTO_APPROVE_RESULTS = True
 AUTO_CONFIRM_PERIOD = True
 DEFAULT_START_PRODUCTION = 0
-INITIAL_CREDIT = 20000
+INITIAL_CREDIT = 30000
 
 
 def admin_required(func):
@@ -61,10 +62,16 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/user/<username>')
+# @app.route('/user/<username>')
+# @login_required
+# def user(username):
+#     user = User.query.filter_by(username=username).first_or_404()
+#     return render_template('user.html', user=user)
+
+@app.route('/profile')
 @login_required
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
+def user():
+    user = current_user
     return render_template('user.html', user=user)
 
 
@@ -79,8 +86,9 @@ def current_period():
         return redirect(url_for('index'))
 
     products = Product.query.all()
+    period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{game.current_period}').first_or_404()
 
-    return render_template('current_period.html', user=user, products=products)
+    return render_template('current_period.html', user=user, period_total=period_total, products=products)
 
 
 @app.route('/current_period/finance', methods=['GET', 'POST'])
@@ -119,9 +127,10 @@ def current_period_product(product):
         return redirect(url_for('index'))
 
     product = Product.query.filter_by(id=product).first_or_404()
-    period_id = f'{game.id}_{user.id}_{game.current_period}_{product.id}'
-    period = Period.query.filter_by(id=period_id).first()
+    period_id = f'{game.id}_{user.id}_{game.current_period}'
+    period = Period.query.filter_by(id=f'{period_id}_{product.id}').first()
     userinput = get_or_create(db.session, Userinput, id=f'{period.id}')
+    period_total = PeriodTotal.query.filter_by(id=period_id).first_or_404()
 
     form = UserInputForm(obj=userinput)
     if form.validate_on_submit():
@@ -137,7 +146,7 @@ def current_period_product(product):
         db.session.commit()
         flash(f'Successfully submitted form!')
 
-    return render_template('current_period_product.html', user=user,
+    return render_template('current_period_product.html', user=user, period_total=period_total,
                            current_period=game.current_period, form=form, product=product)
 
 
@@ -160,8 +169,12 @@ def confirm_current_period(gameid):
                       for period_total in player.period_total.filter_by(period_number=game.current_period).all()]
 
     form = None
-    if periods and all([p.confirmed_by_admin for p in periods]) and periods_totals and all(periods_totals):
+    all_confirmed = (periods and all([p.confirmed_by_admin for p in periods])) \
+        and (periods_totals and all([pt.input_approved_by_admin for pt in periods_totals]))
 
+    if not all_confirmed:
+        flash('There are unconfirmed user inputs.')
+    else:
         form = ConfirmCurrentPeriodResultsForm()
         if form.validate_on_submit():
             if form.approved.data:
@@ -189,26 +202,58 @@ def confirm_current_period(gameid):
                     previous_period_total = player.period_total.filter_by(
                         period_number=game.current_period-1).first()
 
-                    next_period_total = PeriodTotal.query.filter_by(
+                    next_p_total = PeriodTotal.query.filter_by(
                         id=f'{game.id}_{player.id}_{game.current_period}').first()
-                    if not next_period_total:
-                        next_period_total = PeriodTotal(
+                    if not next_p_total:
+                        next_p_total = PeriodTotal(
                             id=f'{game.id}_{player.id}_{game.current_period}', game_id=game.id,
                             period_number=game.current_period)
-                    next_period_total.money_total_begining_of_period = previous_period_total.money_total_end_of_period
 
+                    # financial calculations
+                    next_p_total.credit_total = (previous_period_total.credit_total
+                                                 - previous_period_total.deposit_credit
+                                                 + previous_period_total.take_credit)
 
-                    #todo calculate credit
+                    next_p_total.overdraft_total = (previous_period_total.overdraft_total
+                                                    - previous_period_total.deposit_overdraft)
 
-                    next_period_total.credit_total = previous_period_total.credit_total - 0 # deposit
-                    next_period_total.credit_total = previous_period_total.overdraft_total - 0 # deposit
-                    player.period_total.append(next_period_total)
+                    next_p_total.money_total_begining_of_period = (previous_period_total.money_total_end_of_period
+                                                                   - previous_period_total.deposit_overdraft
+                                                                   - previous_period_total.take_credit)
+
+                    if next_p_total.overdraft_total < 0:
+                        overdraft_change = next_p_total.overdraft_total
+                        next_p_total.overdraft_total = 0
+                        next_p_total.money_total_begining_of_period += overdraft_change
+                    # financial calculations
+
+                    player.period_total.append(next_p_total)
                     db.session.add(player)
                     db.session.commit()
                 flash(f'Current game period is {game.current_period}')
                 flash(f'Successfully updated game state!')
 
     return render_template('confirm_game.html', game=game, periods=periods, form=form, players=players)
+
+
+@app.route('/game/<game>/go_back_one_period', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def go_back_one_period(game):
+    game = Game.query.filter_by(id=game).first_or_404()
+    form = DoubleConfirmForm()
+    title = f'Decrement current period - {game.current_period} for game {game.id}?'
+    if form.validate_on_submit():
+        if form.approved.data and form.approved2.data:
+
+            game.current_period -= 1
+            if game.current_period < 1:
+                game.current_period = 1
+            db.session.add(game)
+            db.session.commit()
+            flash(f'Went one period back in time! :O Current period is: {game.current_period}')
+
+    return render_template('simple_form_h1.html', game=game,  title=title, form=form)
 
 
 @app.route('/calculate_period_results')
@@ -264,7 +309,7 @@ def confirm_period_finance(game, user):
     game = Game.query.filter_by(id=game).first_or_404()
     period_id = f'{game.id}_{user}_{game.current_period}'
     period_total = PeriodTotal.query.filter_by(id=period_id).first_or_404()
-    form = UserInputPeriodTotal(obj=period_total)
+    form = ReviewUserInputPeriodTotal(obj=period_total)
     if form.validate_on_submit():
         form.populate_obj(period_total)
         db.session.add(period_total)
@@ -298,7 +343,7 @@ def game_period_review(game, user, product):
 
         db.session.add(userinput)
         db.session.commit()
-        flash(f'Successfully updated form! {form.data}')
+        flash(f'Successfully updated form!')
 
     return render_template('current_period_product.html', period=period,
                            user=user, product=product, form=form)
@@ -443,7 +488,7 @@ def _calculate_period_results(game) -> None:
         total_administrative_costs = 0
         total_production_quantity = 0
         total_interest_costs = ((current_player_period.credit_total * scenario_period.interest_credit)
-                                + (current_player_period.overdraft * scenario_period.interest_overdraft))
+                                + (current_player_period.overdraft_total * scenario_period.interest_overdraft))
         current_player_period.total_interest_costs = total_interest_costs
 
         producing_at_least_one_product = any(
@@ -540,7 +585,7 @@ def _calculate_period_results(game) -> None:
 
             if producing_at_least_one_product:
                 interest_costs = (player_input.produce_quantity /
-                                  current_player_period.total_production_quantity or 1) * total_interest_costs
+                                  (current_player_period.total_production_quantity or 1)) * total_interest_costs
             else:
                 interest_costs = total_interest_costs / 3
 
@@ -624,7 +669,7 @@ def _calculate_period_results(game) -> None:
             # calculate administrative costs by product after we have totals
             if producing_at_least_one_product:
                 administrative_costs = (
-                    player_input.produce_quantity / current_player_period.total_production_quantity or 1) \
+                    player_input.produce_quantity / (current_player_period.total_production_quantity or 1)) \
                                        * current_player_period.total_administrative_costs
             else:
                 administrative_costs = current_player_period.total_administrative_costs / 3

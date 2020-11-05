@@ -14,7 +14,8 @@
                 </a>
                 <hr>
         {% endfor %}
-
+        <h6><a href="/game/{{game.id}}/go_back_one_period">Go back one period</a></h6>
+        <hr>
     {% endfor %}
     <hr>
     <a href="{{ url_for('calculate_period_results') }}"><h3>Calculate Period Results</h3></a>

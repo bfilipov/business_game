@@ -10,7 +10,11 @@
             <strong>Period:{{period.period_number}}</strong>
             <strong>Продукт:{{product.name}}</strong></h3>
     {% else %}
-        <p>Отбор {{user.display_name}}</p>
+        <p>Отбор: {{user.display_name}}</p>
+        <p>Разполагаеми средства: {{period_total.money_total_begining_of_period}}</p>
+        <p>Кредит: {{period_total.credit_total}}</p>
+        <p>Овърдрафт: {{period_total.overdraft_total}}</p>
+        <hr>
         <h4>Данни за продукт {{product.id}} - {{product.name}}</h4>
     {% endif %}
     <hr>

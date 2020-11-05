@@ -8,13 +8,15 @@
 
         <h3>Review data for <strong>Game: {{user.game_id}}</strong></h3>
         <p><a href="/confirm_finance/game/{{user.game_id}}/user/{{user.id}}">
-               Потвърти финансови данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}</a></p>
+               Потвърди финансови данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}</a></p>
         {% for period in periods%}
+            <hr>
             <strong>User: {{user.id}}</strong>
             <strong>Period:{{period.period_number}}</strong>
             <strong>Product:{{period.product_id}}</strong>
+
             <p><a href="/game/{{user.game_id}}/user/{{user.id}}/product/{{period.product_id}}">
-               Потвърти входни данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
+               Потвърди входни данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
                 Продукт: {{period.product_id}}</a></p>
             <p><a href="/confirm/game/{{user.game_id}}/user/{{user.id}}/product/{{period.product_id}}">
                 Потвърди изходни данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
@@ -23,6 +25,10 @@
         {% endfor %}
     {% else %}
         <p>Отбор: {{user.display_name}}</p>
+        <p>Разполагаеми средства: {{period_total.money_total_begining_of_period}}</p>
+        <p>Кредит: {{period_total.credit_total}}</p>
+        <p>Овърдрафт: {{period_total.overdraft_total}}</p>
+        <hr>
         {% for product in products%}
             <p><a href="/current_period/{{product.id}}">
                 Въведете данни за продукт: {{product.name}}</a></p>

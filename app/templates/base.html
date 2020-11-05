@@ -4,8 +4,6 @@
     {% if title %}{{ title }} - Yogurt{% else %}Yogurt{% endif %}
 {% endblock %}
 
-
-
 {% block navbar %}
     <nav class="navbar navbar-default">
         <div class="container">
@@ -32,7 +30,7 @@
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
                         <li><a href="{{ url_for('current_period') }}">Настоящ период</a></li>
-                        <li><a href="{{ url_for('user', username=current_user.username) }}">Профил</a></li>
+                        <li><a href="{{ url_for('user') }}">Профил</a></li>
                         <li><a href="{{ url_for('logout') }}">Изход</a></li>
                     {% endif %}
                 </ul>

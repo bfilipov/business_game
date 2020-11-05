@@ -73,6 +73,11 @@ class UserInputPeriodTotal(FlaskForm):
     submit = SubmitField('Изпращане')
 
 
+class ReviewUserInputPeriodTotal(UserInputPeriodTotal):
+    input_approved_by_admin = BooleanField('Approved')
+    submit = SubmitField('Изпращане')
+
+
 class ReviewUserInputForm(UserInputForm):
     approved_by_admin = BooleanField('Approved', validators=[])
     submit = SubmitField('Submit')
@@ -184,3 +189,8 @@ class ConfirmCurrentPeriodResultsForm(FlaskForm):
     approved = BooleanField('Approved?')
     submit = SubmitField('Submit')
 
+
+class DoubleConfirmForm(FlaskForm):
+    approved = BooleanField('Go back one period?')
+    approved2 = BooleanField('Really?')
+    submit = SubmitField('Submit')

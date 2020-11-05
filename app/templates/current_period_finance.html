@@ -9,7 +9,12 @@
             <strong>User: {{user.display_name}} ID: {{user.id}}</strong>
             <strong>Period:{{period_total.period_number}}</strong>
     {% else %}
-        <p>Отбор {{user.display_name}}</p>
+        <p>Отбор: {{user.display_name}}</p>
+        <p>Период: {{period_total.period_number}}</p>
+        <p>Разполагаеми средства: {{period_total.money_total_begining_of_period}}</p>
+        <p>Кредит: {{period_total.credit_total}}</p>
+        <p>Овърдрафт: {{period_total.overdraft_total}}</p>
+
     {% endif %}
     <hr>
 
