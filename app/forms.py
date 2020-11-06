@@ -50,6 +50,23 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Email is already taken.')
 
 
+class EditProfileForm(FlaskForm):
+    display_name = StringField('Име на отбора', validators=[DataRequired()])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    member1 = StringField('Student 1', validators=[DataRequired()])
+    member2 = StringField('Student 2')
+    member3 = StringField('Student 3')
+    member4 = StringField('Student 4')
+    member5 = StringField('Student 5')
+    member6 = StringField('Student 6')
+    member7 = StringField('Student 7')
+    member8 = StringField('Student 8')
+    member9 = StringField('Student 9')
+    member10 = StringField('Student 10')
+
+    submit = SubmitField('Submit')
+
+
 class UserInputForm(FlaskForm):
 
     produce_quantity = IntegerField('Производство', validators=[NumberRange(min=0, max=2000)])  # production
@@ -66,9 +83,9 @@ class UserInputForm(FlaskForm):
 
 
 class UserInputPeriodTotal(FlaskForm):
-    deposit_credit = IntegerField('Депозирай по кредит/депозит', validators=[NumberRange(min=0, max=10000)])
+    # deposit_credit = IntegerField('Депозирай по кредит/депозит', validators=[NumberRange(min=0, max=10000)])
     deposit_overdraft = IntegerField('Депозирай по овердрафт', validators=[NumberRange(min=0, max=10000)])
-    take_credit = IntegerField('Изтегли нов кредит', validators=[NumberRange(min=0, max=30000)])
+    take_credit = IntegerField('Изтегли кредит/ Депозирай по сметка', validators=[NumberRange(min=-30000, max=30000)])
 
     submit = SubmitField('Изпращане')
 

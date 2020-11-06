@@ -9,7 +9,7 @@ from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, UserInputForm, ReviewUserInputForm, ScenarioPerProductForm, \
     ScenarioPerPeriodForm, ReviewPeriodForm, ConfirmCurrentPeriodResultsForm, UserInputPeriodTotal, \
-    ReviewUserInputPeriodTotal, DoubleConfirmForm
+    ReviewUserInputPeriodTotal, DoubleConfirmForm, EditProfileForm
 from app.models import Game, Period, PeriodTotal, Product, ScenarioPerProduct, ScenarioPerPeriod, User, Userinput
 
 PLAYERS_PER_GAME = 10
@@ -89,11 +89,22 @@ def marketing():
 #     user = User.query.filter_by(username=username).first_or_404()
 #     return render_template('user.html', user=user)
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def user():
     user = current_user
-    return render_template('user.html', user=user)
+    form = EditProfileForm(obj=user)
+    if form.validate_on_submit():
+        form.populate_obj(user)
+        db.session.add(user)
+        db.session.commit()
+    return render_template('user.html', user=user, form=form)
+
+# @app.route('/edit_profile')
+# @login_required
+# def user():
+#     user = current_user
+#     return render_template('user.html', user=user)
 
 
 @app.route('/current_period', methods=['GET', 'POST'])

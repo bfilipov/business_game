@@ -1,11 +1,18 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
 
-            <img src="{{ user.avatar(128) }}">
-            <h1>Отбор: {{ user.display_name }}</h1>
-            <h1>username: {{ user.username }}</h1>
-            <hr>
+        <img src="{{ user.avatar(128) }}">
+        <h1>Отбор: {{ user.display_name }}</h1>
+        <h1>username: {{ user.username }}</h1>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-4">
+                {{ wtf.quick_form(form) }}
+            </div>
+        </div>
 <!--    {% for post in posts %}-->
 <!--        {% include '_post.html' %}-->
 <!--    {% endfor %}-->
