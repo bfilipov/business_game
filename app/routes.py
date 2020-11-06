@@ -62,6 +62,11 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/gameplay')
+def gameplay():
+    return render_template('gameplay.html')
+
+
 # @app.route('/user/<username>')
 # @login_required
 # def user(username):
@@ -217,14 +222,24 @@ def confirm_current_period(gameid):
                     next_p_total.overdraft_total = (previous_period_total.overdraft_total
                                                     - previous_period_total.deposit_overdraft)
 
-                    next_p_total.money_total_begining_of_period = (previous_period_total.money_total_end_of_period
-                                                                   - previous_period_total.deposit_overdraft
-                                                                   - previous_period_total.take_credit)
-
+                    # add overdraft_change to next period money
+                    overdraft_change = 0
                     if next_p_total.overdraft_total < 0:
-                        overdraft_change = next_p_total.overdraft_total
+                        overdraft_change = -next_p_total.overdraft_total
                         next_p_total.overdraft_total = 0
                         next_p_total.money_total_begining_of_period += overdraft_change
+
+                    next_p_total.money_total_begining_of_period = (previous_period_total.money_total_end_of_period
+                                                                   - previous_period_total.deposit_overdraft
+                                                                   - previous_period_total.take_credit
+                                                                   + overdraft_change)
+
+                    # if money for next_p less than 0 add to overdraft forr next_p and set money to 0
+                    if next_p_total.money_total_begining_of_period < 0:
+                        next_p_total.overdraft_total = (next_p_total.overdraft_total
+                                                        + next_p_total.money_total_begining_of_period)
+                        next_p_total.money_total_begining_of_period = 0
+
                     # financial calculations
 
                     player.period_total.append(next_p_total)
