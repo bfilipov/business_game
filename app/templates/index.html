@@ -4,6 +4,6 @@
     {% if current_user.is_anonymous %}
         <h3>Welcome to yogurt game!</h3>
     {% else %}
-        <h3>Привет, {{ current_user.display_name }}</h3>
+         {% include 'gameplay.html' %}
     {% endif %}
 {% endblock %}

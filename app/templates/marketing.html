@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    {% if previous_period_total %}
+        <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                    {% for product in products %}
+                       <th scope="col">{{product.name}}</th>
+                    {% endfor %}
+              </tr>
+            </thead>
+                {% for i in ['Price','Sells','Quality','Marketing'] %}
+                    <tr><td>{{i}}</td></tr>
+                        {% for player in players %}
+                            <tr>
+                                <td>{{player.username}}</td>
+                                {% for period in players.periods %}
+                                    <td>1{{period.period_number}}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                {% endfor %}
+        </table>
+
+    {% endif%}
+{% endblock %}

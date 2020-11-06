@@ -62,10 +62,26 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/gameplay')
-def gameplay():
-    return render_template('gameplay.html')
+@app.route('/marketing')
+@login_required
+def marketing():
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first()
+    players = game.players.all()
+    products = Product.query.all()
+    period_id = f'{game.id}_{user.id}_{game.current_period-1}'
+    previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
+    return render_template('marketing.html', user=user, players=players,
+                           previous_period_total=previous_period_total, products=products)
 
+
+# @app.route('/gameplay')
+# def gameplay():
+#     return render_template('gameplay.html')
+
+# @app.route('/info/bg')
+# def help_bg():
+#     return render_template('help_bg.html')
 
 # @app.route('/user/<username>')
 # @login_required
@@ -151,7 +167,7 @@ def current_period_product(product):
         db.session.commit()
         flash(f'Successfully submitted form!')
 
-    return render_template('current_period_product.html', user=user, period_total=period_total,
+    return render_template('current_period_product.html', user=user, period_total=period_total, period=period,
                            current_period=game.current_period, form=form, product=product)
 
 
