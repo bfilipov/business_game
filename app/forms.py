@@ -111,15 +111,15 @@ class ScenarioPerPeriodForm(FlaskForm):
 
     cost_transport = FloatField('транспортни разходи', validators=[])  # транспортни разходи
     cost_storage = FloatField('складови разходи', validators=[])  # складови разходи
-    cost_fixed_administrative = IntegerField('фиксирани административни разходи', validators=[])  # фиксирани административни разходи
+    # cost_fixed_administrative = IntegerField('фиксирани административни разходи', validators=[])  # фиксирани административни разходи
     cost_product_manager = IntegerField('продуктов мениджър', validators=[])  # продуктов мениджър
     cost_new_product_manager = IntegerField('нов продуктов мениджър', validators=[])  # нов продуктов мениджър
 
     price_research = IntegerField('цена на проучване', validators=[])  # цена на проучване
     # starting_capital = db.Column()  # начален капитал (заем)
     # max_loan = db.Column()  # макс. Размер на изтеглен заем за период
-    interest_credit = FloatField('лихвен процент кредит', validators=[])  # лихвен процент кредит
-    interest_overdraft = FloatField('лихвен процент овърдрафт', validators=[])  # лихвен процент овърдрафт
+    # interest_credit = FloatField('лихвен процент кредит', validators=[])  # лихвен процент кредит
+    # interest_overdraft = FloatField('лихвен процент овърдрафт', validators=[])  # лихвен процент овърдрафт
     max_price = FloatField('макс цена', validators=[])  # макс цена
 
     submit = SubmitField('Submit')
