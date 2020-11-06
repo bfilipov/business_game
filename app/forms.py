@@ -53,18 +53,30 @@ class RegistrationForm(FlaskForm):
 class EditProfileForm(FlaskForm):
     display_name = StringField('Име на отбора', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
-    member1 = StringField('Student 1', validators=[DataRequired()])
-    member2 = StringField('Student 2')
-    member3 = StringField('Student 3')
-    member4 = StringField('Student 4')
-    member5 = StringField('Student 5')
-    member6 = StringField('Student 6')
-    member7 = StringField('Student 7')
-    member8 = StringField('Student 8')
-    member9 = StringField('Student 9')
-    member10 = StringField('Student 10')
+    member1 = StringField('Студент 1', validators=[DataRequired()])
+    member2 = StringField('Студент 2')
+    member3 = StringField('Студент 3')
+    member4 = StringField('Студент 4')
+    member5 = StringField('Студент 5')
+    member6 = StringField('Студент 6')
+    member7 = StringField('Студент 7')
+    member8 = StringField('Студент 8')
+    member9 = StringField('Студент 9')
+    member10 = StringField('Студент 10')
 
-    submit = SubmitField('Submit')
+    submit = SubmitField('Изпрати')
+
+    def validate_display_name(self, display_name):
+        match = User.query.filter_by(display_name=display_name.data).first()
+        curr_user = self.meta.user
+        if match and match != curr_user:
+            raise ValidationError('Display name is already taken.')
+
+    def validate_email(self, email):
+        match = User.query.filter_by(email=email.data).first()
+        curr_user = self.meta.user
+        if match and match != curr_user:
+            raise ValidationError('Email is already taken.')
 
 
 class UserInputForm(FlaskForm):

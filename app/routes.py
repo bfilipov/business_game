@@ -69,10 +69,44 @@ def marketing():
     game = Game.query.filter_by(id=user.game_id).first()
     players = game.players.all()
     products = Product.query.all()
+    # period_totals = [period
+    #            for player in players
+    #            for period in player.periods.all()]
+
     period_id = f'{game.id}_{user.id}_{game.current_period-1}'
     previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
+    previous_period_products = [None] if game.current_period < 2 else \
+        Period.query.filter_by(game_id=user.game_id, period_number=game.current_period-1).all()
+    if previous_period_total:
+        period_prod_1 = Period.query.filter_by(game_id=user.game_id, user_id=user.id, period_number=game.current_period - 1,
+                                               product_id=1).first()
+        period_prod_2 = Period.query.filter_by(game_id=user.game_id, user_id=user.id, period_number=game.current_period - 1,
+                                               product_id=2).first()
+        period_prod_3 = Period.query.filter_by(game_id=user.game_id, user_id=user.id, period_number=game.current_period - 1,
+                                               product_id=3).first()
+        show = {
+            'price1': period_prod_1.research_price,
+            'price2': period_prod_2.research_price,
+            'price3': period_prod_3.research_price,
+
+            'marketing1': period_prod_1.research_marketing,
+            'marketing2': period_prod_2.research_marketing,
+            'marketing3': period_prod_3.research_marketing,
+
+            'quality1': period_prod_1.research_quality,
+            'quality2': period_prod_2.research_quality,
+            'quality3': period_prod_3.research_quality,
+
+            'sales1': period_prod_1.research_sales,
+            'sales2': period_prod_2.research_sales,
+            'sales3': period_prod_3.research_sales,
+        }
+    else:
+        show = {}
+
     return render_template('marketing.html', user=user, players=players,
-                           previous_period_total=previous_period_total, products=products)
+                           previous_period_products=previous_period_products,
+                           previous_period_total=previous_period_total, products=products, show=show)
 
 
 # @app.route('/gameplay')
@@ -93,7 +127,7 @@ def marketing():
 @login_required
 def user():
     user = current_user
-    form = EditProfileForm(obj=user)
+    form = EditProfileForm(obj=user, meta={'user': current_user})
     if form.validate_on_submit():
         form.populate_obj(user)
         db.session.add(user)
@@ -243,7 +277,6 @@ def confirm_current_period(gameid):
 
                     # financial calculations
                     next_p_total.credit_total = (previous_period_total.credit_total
-                                                 - previous_period_total.deposit_credit
                                                  + previous_period_total.take_credit)
 
                     next_p_total.overdraft_total = (previous_period_total.overdraft_total
@@ -264,7 +297,7 @@ def confirm_current_period(gameid):
                     # if money for next_p less than 0 add to overdraft forr next_p and set money to 0
                     if next_p_total.money_total_begining_of_period < 0:
                         next_p_total.overdraft_total = (next_p_total.overdraft_total
-                                                        + next_p_total.money_total_begining_of_period)
+                                                        - next_p_total.money_total_begining_of_period)
                         next_p_total.money_total_begining_of_period = 0
 
                     # financial calculations
