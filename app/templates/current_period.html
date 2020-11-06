@@ -29,6 +29,8 @@
         <p>Кредит: {{period_total.credit_total}}</p>
         <p>Овърдрафт: {{period_total.overdraft_total}}</p>
         <hr>
+        <h4>Данни за период: {{period_total.period_number}}</h4>
+        <hr>
         {% for product in products%}
             <p><a href="/current_period/{{product.id}}">
                 Въведете данни за продукт: {{product.name}}</a></p>

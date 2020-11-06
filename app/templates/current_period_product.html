@@ -15,10 +15,11 @@
         <p>Кредит: {{period_total.credit_total}}</p>
         <p>Овърдрафт: {{period_total.overdraft_total}}</p>
         <hr>
-        <h4>Данни за продукт {{product.id}} - {{product.name}}</h4>
+        <h4>Данни за период: {{period_total.period_number}}</h4>
     {% endif %}
     <hr>
-
+    <h4>Данни за продукт: {{product.name}}</h4>
+    <hr>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
