@@ -81,7 +81,7 @@ def results():
 @login_required
 def marketing():
     user = current_user
-    game = Game.query.filter_by(id=user.game_id).first()
+    game = Game.query.filter_by(id=user.game_id).first_or_404()
     players = game.players.all()
     products = Product.query.all()
     # period_totals = [period
@@ -367,6 +367,17 @@ def calculate_period_results():
     return redirect(url_for('games'))
 
 
+@app.route('/check_user_inputs')
+@login_required
+@admin_required
+def check_user_inputs():
+    games = Game.query.filter_by(is_active=True).all()
+    for game in games:
+        for player in game.players:
+            _check_inputs(player)
+    return redirect(url_for('games'))
+
+
 @app.route('/games')
 @login_required
 @admin_required
@@ -564,12 +575,19 @@ def register():
 
 
 # funks
+def _check_inputs(player):
+    game = Game.query.filter_by(id=player.game_id).first()
+    for player_input in player.userinput.filter_by(period_number=game.current_period).all():
+        if not player_input.approved_by_admin:
+            flash(f'Game: {game.id} Username: {player.username} '
+                  f'UserID: {player.id} UserInput: {player_input} not approved.')
+
+
 def _calculate_period_results(game) -> None:
 
     total_combined_score = 0
 
     for player in game.players:
-
         # fill in available data for current period per player
         current_player_period = PeriodTotal.query.filter_by(
             id=f'{game.id}_{player.id}_{game.current_period}').first()
