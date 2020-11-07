@@ -582,8 +582,9 @@ def _check_inputs(player):
             flash(f'Game: {game.id} Username: {player.username} '
                   f'UserID: {player.id} UserInput: {player_input} not approved.')
     for period_total in player.period_total.filter_by(period_number=game.current_period).all():
-        flash(f'Game: {game.id} Username: {player.username} '
-              f'UserID: {player.id} Financial Info: {period_total} not approved.')
+        if not period_total.input_approved_by_admin:
+            flash(f'Game: {game.id} Username: {player.username} '
+                  f'UserID: {player.id} Financial Info: {period_total} not approved.')
 
 
 def _calculate_period_results(game) -> None:
