@@ -14,7 +14,7 @@
             {% for player in players %}
                 <tr>
                     <td>{{player.display_name}}</td>
-                    {% for period in player.periods %}
+                    {% for period in player.periods|sort(attribute='id') %}
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.sell_price}}</td>
@@ -43,7 +43,7 @@
             {% for player in players %}
                 <tr>
                     <td>{{player.display_name}}</td>
-                    {% for period in player.periods %}
+                    {% for period in player.periods|sort(attribute='id') %}
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.total_sells}} </td>
@@ -72,7 +72,7 @@
             {% for player in players %}
                 <tr>
                     <td>{{player.display_name}}</td>
-                    {% for period in player.periods %}
+                    {% for period in player.periods|sort(attribute='id') %}
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.index_quality}} </td>
@@ -101,7 +101,7 @@
             {% for player in players %}
                 <tr>
                     <td>{{player.display_name}}</td>
-                    {% for period in player.periods %}
+                    {% for period in player.periods|sort(attribute='id') %}
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.consolidated_marketing_budget}} </td>

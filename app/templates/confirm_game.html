@@ -6,302 +6,302 @@
             <thead>
               <tr>
                 <th scope="col">#</th>
-                {% for period in periods %}
+                {% for period in periods|sort(attribute='id') %}
                     <th scope="col">{{period.id}}</th>
                 {% endfor %}
               </tr>
           </thead>
                 <tr>
                 <td>id</td>
-                {% for period in periods %}
+                {% for period in periods|sort(attribute='id') %}
                     <td>{{period.id}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>game_id</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.game_id}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>user_id</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.user_id}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>period_number</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.period_number}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>userinput_id</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.userinput_id}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>product_id</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.product_id}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>sell_price</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.sell_price}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>income_from_sells</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.income_from_sells}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>gross_proffit</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.gross_proffit}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>net_proffit</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.net_proffit}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>accumulated_proffit</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.accumulated_proffit}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>labor_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.labor_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>material_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.material_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>total_production_cost</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.total_production_cost}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>marketing_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.marketing_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>research_and_development_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.research_and_development_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>transport_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.transport_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>storage_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.storage_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>administrative_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.administrative_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>marketing_research_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.marketing_research_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>interest_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.interest_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>other_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.other_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>total_non_production_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.total_non_production_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>products_in_stock_beginning_of_period</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.products_in_stock_beginning_of_period}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>products_in_stock_end_of_period</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.products_in_stock_end_of_period}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>research_price</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.research_price}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>research_marketing</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.research_marketing}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>research_quality</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.research_quality}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>research_sales</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.research_sales}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>index_marketing</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.index_marketing}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>index_quality</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.index_quality}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>consolidated_rnd_budget</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.consolidated_rnd_budget}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>consolidated_marketing_budget</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.consolidated_marketing_budget}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>total_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.total_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>total_costs_per_one</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.total_costs_per_one}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>product_manager_costs</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.product_manager_costs}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>is_producing</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.is_producing}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>recalc_quality</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.recalc_quality}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>recalc_marketing</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.recalc_marketing}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>recalc_price</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.recalc_price}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>combined_score</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.combined_score}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>market_share</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.market_share}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>demand</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.demand}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>direct_sells</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.direct_sells}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>unsatisfied_demand</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.unsatisfied_demand}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>secondary_sells</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.secondary_sells}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>total_sells</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.total_sells}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>random_value</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.random_value}}</td>
                 {% endfor %}
                 </tr>
                 <tr>
                     <td>confirmed_by_admin</td>
-                    {% for period in periods %}
+                    {% for period in periods|sort(attribute='id') %}
                         <td>{{period.confirmed_by_admin}}</td>
                 {% endfor %}
                 </tr>

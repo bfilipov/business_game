@@ -75,15 +75,18 @@ def marketing():
 
     period_id = f'{game.id}_{user.id}_{game.current_period-1}'
     previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
-    previous_period_products = [None] if game.current_period < 2 else \
-        Period.query.filter_by(game_id=user.game_id, period_number=game.current_period-1).all()
+    # previous_period_products = [None] if game.current_period < 2 else \
+    #     Period.query.filter_by(game_id=user.game_id, period_number=game.current_period-1).all()
     if previous_period_total:
         period_prod_1 = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
                                                period_number=game.current_period - 1, product_id=1).first()
+
         period_prod_2 = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
                                                period_number=game.current_period - 1, product_id=2).first()
+
         period_prod_3 = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
                                                period_number=game.current_period - 1, product_id=3).first()
+
         show = {
             'price1': period_prod_1.research_price,
             'price2': period_prod_2.research_price,
@@ -101,11 +104,11 @@ def marketing():
             'sales2': period_prod_2.research_sales,
             'sales3': period_prod_3.research_sales,
         }
+
     else:
         show = {}
 
     return render_template('marketing.html', user=user, players=players,
-                           previous_period_products=previous_period_products,
                            previous_period_total=previous_period_total, products=products, show=show)
 
 
