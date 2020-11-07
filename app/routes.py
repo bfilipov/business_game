@@ -690,9 +690,6 @@ def _calculate_period_results(game) -> None:
             transport_costs = player_input.produce_quantity * scenario.cost_transport
             current_prod_period.transport_costs = transport_costs
 
-            storage_costs = player_input.produce_quantity * scenario.cost_storage
-            current_prod_period.storage_costs = storage_costs
-
             is_producing = True if player_input.produce_quantity else False
             current_prod_period.is_producing = is_producing
             was_produsing = previous_period.is_producing if previous_period else False
@@ -717,11 +714,11 @@ def _calculate_period_results(game) -> None:
 
             # administrative costs
             current_prod_period.other_costs = scenario.cost_unpredicted
-            total_administrative_costs += scenario.cost_unpredicted
+            total_administrative_costs += scenario.cost_unpredicted + product_manager_costs
 
             total_non_production_costs = (
                 player_input.marketing_costs + player_input.research_and_development_costs +
-                transport_costs + storage_costs + product_manager_costs + marketing_research_costs
+                transport_costs + marketing_research_costs
                 + scenario.cost_unpredicted + interest_costs
             )
             current_prod_period.total_non_production_costs = total_non_production_costs
@@ -815,6 +812,10 @@ def _calculate_period_results(game) -> None:
             current_prod_period = Period.query.filter_by(
                 id=f'{game.id}_{player.id}_{game.current_period}_{player_input.product_id}').first()
 
+            scenario = ScenarioPerProduct.query.filter_by(
+                demand_scenario_id=game.demand_scenario_id, period=game.current_period,
+                product_id=player_input.product_id).first()
+
             supply = player_input.produce_quantity + current_prod_period.products_in_stock_beginning_of_period
             unsatisfied_demand = current_prod_period.unsatisfied_demand
             direct_sells = current_prod_period.direct_sells
@@ -832,6 +833,11 @@ def _calculate_period_results(game) -> None:
 
             products_in_stock_end_of_period = supply - total_sells
             current_prod_period.products_in_stock_end_of_period = products_in_stock_end_of_period
+
+            storage_costs = products_in_stock_end_of_period * scenario.cost_storage
+            current_prod_period.storage_costs = storage_costs
+            current_prod_period.total_non_production_costs += storage_costs
+            current_prod_period.total_costs += storage_costs
 
             gross_proffit = income_from_sells - current_prod_period.total_production_cost
             current_prod_period.gross_proffit = gross_proffit
