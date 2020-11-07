@@ -17,12 +17,12 @@
                     {% for period in player.periods %}
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
-                                <td>{{period.sell_price}} </td>
-                            {% elif show.price1 and period.product_id==1%}
                                 <td>{{period.sell_price}}</td>
-                            {% elif show.price2 and period.product_id==2%}
+                            {% elif show.price1 and period.product_id== 1 %}
                                 <td>{{period.sell_price}}</td>
-                            {% elif show.price3 and period.product_id==3%}
+                            {% elif show.price2 and period.product_id== 2 %}
+                                <td>{{period.sell_price}}</td>
+                            {% elif show.price3 and period.product_id== 3 %}
                                 <td>{{period.sell_price}}</td>
                             {% else %}
                                 <td>-</td>
@@ -47,11 +47,11 @@
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.total_sells}} </td>
-                            {% elif show.sales1 and period.product_id==1%}
+                            {% elif show.sales1 and period.product_id==1 %}
                                 <td>{{period.total_sells}}</td>
-                            {% elif show.sales2 and period.product_id==2%}
+                            {% elif show.sales2 and period.product_id==2 %}
                                 <td>{{period.total_sells}}</td>
-                            {% elif show.sales3 and period.product_id==3%}
+                            {% elif show.sales3 and period.product_id==3 %}
                                 <td>{{period.total_sells}}</td>
                             {% else %}
                                 <td>- </td>
@@ -76,11 +76,11 @@
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.index_quality}} </td>
-                            {% elif show.quality1 and period.product_id==1%}
+                            {% elif show.quality1 and period.product_id==1 %}
                                 <td>{{period.index_quality}}</td>
-                            {% elif show.quality2 and period.product_id==2%}
+                            {% elif show.quality2 and period.product_id==2 %}
                                 <td>{{period.index_quality}}</td>
-                            {% elif show.quality3 and period.product_id==3%}
+                            {% elif show.quality3 and period.product_id==3 %}
                                 <td>{{period.index_quality}}</td>
                             {% else %}
                                 <td>- </td>
@@ -105,11 +105,11 @@
                         {% if period.period_number == previous_period_total.period_number %}
                             {% if period.user_id == user.id %}
                                 <td>{{period.consolidated_marketing_budget}} </td>
-                            {% elif show.marketing1 and period.product_id==1%}
+                            {% elif show.marketing1 and period.product_id==1 %}
                                 <td>{{period.consolidated_marketing_budget}}</td>
-                            {% elif show.marketing2 and period.product_id==2%}
+                            {% elif show.marketing2 and period.product_id==2 %}
                                 <td>{{period.consolidated_marketing_budget}}</td>
-                            {% elif show.marketing3 and period.product_id==3%}
+                            {% elif show.marketing3 and period.product_id==3 %}
                                 <td>{{period.consolidated_marketing_budget}}</td>
                             {% else %}
                                 <td>- </td>
