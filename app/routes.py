@@ -342,7 +342,7 @@ def confirm_current_period(gameid):
                     db.session.commit()
                 flash(f'Current game period is {game.current_period}')
                 flash(f'Successfully updated game state!')
-
+                return redirect(url_for('games'))
     return render_template('confirm_game.html', game=game, periods=periods, form=form, players=players)
 
 
