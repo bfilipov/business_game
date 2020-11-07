@@ -153,21 +153,6 @@ def user():
     return render_template('user.html', user=user, form=form)
 
 
-# @app.route('/admin/ot4et/game<game>/user<user>/period/<period>')
-# @login_required
-# def view_ot4et(game, user, period):
-#     user = User
-#     game = Game.query.filter_by(id=user.game_id).first()
-#
-#     period_id = f'{game.id}_{user.id}_{game.current_period-1}'
-#     previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
-#     periods = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
-#                                      period_number=game.current_period - 1).all()
-#     new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{game.current_period}').first()
-#     return render_template('ot4et.html', periods=periods, previous_period_total=previous_period_total,
-#                            new_period_total=new_period_total)
-
-
 @app.route('/current_period', methods=['GET', 'POST'])
 @login_required
 def current_period():
@@ -244,6 +229,26 @@ def current_period_product(product):
 
 
 # ADMIN :
+@app.route('/admin/ot4et/user/<user>/period/<period>')
+@login_required
+@admin_required
+def view_ot4et(user, period):
+    user = User.query.filter_by(id=user).first_or_404()
+    game = Game.query.filter_by(id=user.game_id).first()
+
+    # todo: sanitize <period>, currently only admin can see this endpoint
+    period = int(period)
+
+    period_id = f'{game.id}_{user.id}_{period}'
+    previous_period_total = {} if int(period) < 2 else PeriodTotal.query.filter_by(id=period_id).first_or_404()
+    periods = Period.query.filter_by(game_id=game.id, user_id=user.id,
+                                     period_number=period-1).all()
+    new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{period}').first_or_404()
+
+    return render_template('ot4et.html', periods=periods, previous_period_total=previous_period_total,
+                           new_period_total=new_period_total)
+
+
 @app.route('/confirm_current_period/game/<gameid>', methods=['GET', 'POST'])
 @login_required
 @admin_required
