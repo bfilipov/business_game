@@ -291,7 +291,7 @@ def confirm_current_period(gameid):
                     if not next_p_total:
                         next_p_total = PeriodTotal(
                             id=f'{game.id}_{player.id}_{game.current_period}', game_id=game.id,
-                            period_number=game.current_period)
+                            period_number=game.current_period, input_approved_by_admin=AUTO_APPROVE_RESULTS)
 
                     # financial calculations
                     next_p_total.credit_total = (previous_period_total.credit_total
@@ -325,6 +325,31 @@ def confirm_current_period(gameid):
                 flash(f'Successfully updated game state!')
 
     return render_template('confirm_game.html', game=game, periods=periods, form=form, players=players)
+
+
+@app.route('/admin/view_results/game/<gameid>/period/<period>')
+@login_required
+@admin_required
+def admin_view_results(gameid, period):
+    """
+    View results per game period """
+    game = Game.query.filter_by(id=gameid).first_or_404()
+    players = game.players.all()
+    periods = [p for player in players
+               for p in player.periods.filter_by(period_number=period).all()]
+    if not periods:
+        flash('Not existing')
+        return redirect(url_for('previous_results'))
+    return render_template('confirm_game.html', game=game, periods=periods, form=None, players=players)
+
+
+@app.route('/admin/previous_results/')
+@login_required
+@admin_required
+def previous_results():
+    games = Game.query.filter_by(is_active=True).all()
+    scenarios = ScenarioPerPeriod.query.all()
+    return render_template('previous_results.html', games=games, scenarios=scenarios)
 
 
 @app.route('/game/<game>/go_back_one_period', methods=['GET', 'POST'])
@@ -571,7 +596,8 @@ def register():
             user.periods.append(initial_period)
 
         initial_period_total = PeriodTotal(
-            id=f'{game.id}_{user.id}_1', game_id=game.id, period_number=1)
+            id=f'{game.id}_{user.id}_1', game_id=game.id, period_number=1,
+            input_approved_by_admin=AUTO_APPROVE_RESULTS)
         initial_period_total.money_total_begining_of_period = INITIAL_CREDIT
         initial_period_total.credit_total = INITIAL_CREDIT
         user.period_total.append(initial_period_total)

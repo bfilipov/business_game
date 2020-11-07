@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+{% block app_content %}
+    {% for g in games %}
+        {% for s in scenarios%}
+            <p><a href="/admin/view_results/game/{{g.id}}/period/{{s.period}}">
+                Game {{g.id}} Peropd: {{s.period}}</a></p>
+        {% endfor %}
+        <hr>
+    {% endfor %}
+{% endblock %}

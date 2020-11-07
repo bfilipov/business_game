@@ -24,6 +24,7 @@
                     {% if current_user.is_anonymous %}
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                     {% elif current_user.is_admin %}
+                        <li><a href="{{ url_for('previous_results') }}">Previous results</a></li>
                         <li><a href="{{ url_for('scenarios_list') }}">Review Scenarios</a></li>
                         <li><a href="{{ url_for('games') }}">Review Games</a></li>
                         <li><a href="{{ url_for('register') }}">Register New User</a></li>
