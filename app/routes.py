@@ -290,12 +290,15 @@ def confirm_current_period(gameid):
                         # try to query period in case we come back from future
                         next_period = Period.query.filter_by(
                             id=f'{game.id}_{player.id}_{game.current_period}_{product.id}').first()
+
                         if not next_period:
                             next_period = Period(
                                 id=f'{game.id}_{player.id}_{game.current_period}_{product.id}', game_id=game.id,
                                 period_number=game.current_period, product_id=product.id,
                                 products_in_stock_beginning_of_period=previous_period.products_in_stock_end_of_period)
                             player.periods.append(next_period)
+                        else:
+                            next_period.products_in_stock_beginning_of_period = previous_period.products_in_stock_end_of_period
 
                     previous_period_total = player.period_total.filter_by(
                         period_number=game.current_period-1).first()
