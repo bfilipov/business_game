@@ -152,11 +152,20 @@ def user():
         db.session.commit()
     return render_template('user.html', user=user, form=form)
 
-# @app.route('/edit_profile')
+
+# @app.route('/admin/ot4et/game<game>/user<user>/period/<period>')
 # @login_required
-# def user():
-#     user = current_user
-#     return render_template('user.html', user=user)
+# def view_ot4et(game, user, period):
+#     user = User
+#     game = Game.query.filter_by(id=user.game_id).first()
+#
+#     period_id = f'{game.id}_{user.id}_{game.current_period-1}'
+#     previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
+#     periods = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
+#                                      period_number=game.current_period - 1).all()
+#     new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{game.current_period}').first()
+#     return render_template('ot4et.html', periods=periods, previous_period_total=previous_period_total,
+#                            new_period_total=new_period_total)
 
 
 @app.route('/current_period', methods=['GET', 'POST'])
@@ -302,7 +311,7 @@ def confirm_current_period(gameid):
 
                     next_p_total.money_total_begining_of_period = (previous_period_total.money_total_end_of_period
                                                                    - previous_period_total.deposit_overdraft
-                                                                   - previous_period_total.take_credit)
+                                                                   + previous_period_total.take_credit)
 
                     # add overdraft_change to next period money
                     if next_p_total.overdraft_total < 0:
