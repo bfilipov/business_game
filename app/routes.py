@@ -62,6 +62,20 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/results')
+@login_required
+def results():
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first()
+
+    period_id = f'{game.id}_{user.id}_{game.current_period-1}'
+    previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
+    periods = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
+                                     period_number=game.current_period - 1).all()
+
+    return render_template('ot4et.html', periods=periods, previous_period_total=previous_period_total)
+
+
 @app.route('/marketing')
 @login_required
 def marketing():

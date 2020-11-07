@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+
+        <table class="table table-striped table-hover" id="meow">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                    <th scope="col">Обикновено</th>
+                    <th scope="col">Уелнес</th>
+                    <th scope="col">Лукс</th>
+                    <th scope="col">total</th>
+              </tr>
+          </thead>
+                <tr>
+                    <td>Приходи</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.income_from_sells}}</td>
+                    {% endfor %}
+                    <td></td>
+                </tr>
+
+                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><strong>Производствени разходи</strong></td><td></td><td></td><td></td><td></td></tr>
+
+                <tr>
+                    <td>Труд</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.labor_costs}}</td>
+                {% endfor %}
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Материали</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.material_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Общо производствени разходи</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.total_production_cost}}</td>
+                {% endfor %}
+                <td></td></tr>
+
+                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr>
+                    <td>Брутна печалба</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.gross_proffit}}</td>
+                {% endfor %}
+                <td></td></tr>
+
+                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><strong>Непроизводствени разходи</strong></td><td></td><td></td><td></td><td></td></tr>
+
+                <tr>
+                    <td>Маркетинг</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.marketing_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>R & D</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.research_and_development_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Транспорт</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.transport_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Складови</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.storage_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Административни</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.administrative_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Разходи за проучвания</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.marketing_research_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Лихви</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.interest_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Други</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.other_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Общо непроизводствени разходи</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.total_non_production_costs}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Нетна печалба за периода</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.net_proffit}}</td>
+                {% endfor %}
+                <td></td></tr>
+
+                <tr>
+                    <td>Натрупана печалба до момента</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.accumulated_proffit}}</td>
+                {% endfor %}
+                <td></td></tr>
+
+                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td><strong>Количества</strong></td><td></td><td></td><td></td><td></td></tr>
+
+                <tr>
+                    <td>Продажби</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.total_sells}}</td>
+                {% endfor %}
+                <td></td></tr>
+                <tr>
+                    <td>Останали на склад</td>
+                    {% for period in periods|sort(attribute='id') %}
+                        <td>{{period.products_in_stock_end_of_period}}</td>
+                {% endfor %}
+                <td></td></tr>
+        </table>
+<script>
+            var table = document.getElementById("meow");
+            for(var i = 1; i < table.rows.length; i++)
+            {    if (!isNaN(parseFloat(table.rows[i].cells[1].innerHTML))
+            | !isNaN(parseFloat(table.rows[i].cells[2].innerHTML))
+            | !isNaN(parseFloat(table.rows[i].cells[3].innerHTML))){
+                table.rows[i].cells[4].innerHTML = parseFloat(table.rows[i].cells[1].innerHTML)
+                + parseFloat(table.rows[i].cells[2].innerHTML) + parseFloat(table.rows[i].cells[3].innerHTML)}}
+</script>
+{% endblock %}
