@@ -356,13 +356,23 @@ def calculate_period_results():
     Calculate results for all active games that have all their inputs approved """
     games = Game.query.filter_by(is_active=True).all()
     for game in games:
-        period_n = game.current_period
+        game_inputs = []
+        for player in game.players.all():
+            for prod_id in [1, 2, 3]:  # handcoded products
+                period_id = f'{game.id}_{player.id}_{game.current_period}_{prod_id}'
 
-        game_inputs = [game.players[i].userinput.filter_by(period_number=period_n).all()
-                       for i in range(len(game.players.all()))]
+                userinput = get_or_create(db.session, Userinput, id=f'{period_id}')
+                userinput.game_id = game.id
+                userinput.user_id = player.id
+                userinput.product_id = prod_id
+                userinput.period_number = game.current_period
+                userinput.approved_by_admin = AUTO_CONFIRM_PERIOD
+                game_inputs.append(userinput)
+                db.session.add(userinput)
+                db.session.commit()
 
         # if all user inputs in game for current period are approved
-        if all([i.approved_by_admin for game_i in game_inputs for i in game_i]):
+        if all(game_inputs):
             _calculate_period_results(game)
     return redirect(url_for('games'))
 
