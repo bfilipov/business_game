@@ -284,6 +284,8 @@ def confirm_current_period(gameid):
                     player.game_id = game.id
                     for product in products:
 
+
+
                         previous_period = player.periods.filter_by(
                             period_number=game.current_period-1, product_id=product.id).first()
 
@@ -695,7 +697,7 @@ def _calculate_period_results(game) -> None:
             recalc_quality = quality_index * scenario.sensitivity_quality
             current_prod_period.recalc_quality = recalc_quality
 
-            recalc_price = sell_price * scenario.sensitivity_price
+            recalc_price = (scenario.max_price - sell_price) * (scenario.sensitivity_price/10)
             current_prod_period.recalc_price = recalc_price
 
             combined_score = recalc_marketing * recalc_quality * recalc_price
@@ -851,6 +853,7 @@ def _calculate_period_results(game) -> None:
         total_period_proffit = 0
         player_total_period = PeriodTotal.query.filter_by(
             id=f'{game.id}_{player.id}_{game.current_period}').first()
+
         for player_input in player.userinput.filter_by(period_number=game.current_period).all():
             current_prod_period = Period.query.filter_by(
                 id=f'{game.id}_{player.id}_{game.current_period}_{player_input.product_id}').first()
