@@ -24,16 +24,16 @@ INITIAL_CREDIT = 30000
 
 # if not app.debug:
 
-if not os.path.exists('logs'):
-    os.mkdir('logs')
-file_handler = RotatingFileHandler('logs/yogurt.log', maxBytes=10240000,
-                                   backupCount=10)
-file_handler.setFormatter(logging.Formatter(
-    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-file_handler.setLevel(logging.INFO)
-app.logger.addHandler(file_handler)
-
-app.logger.setLevel(logging.INFO)
+# if not os.path.exists('logs'):
+#     os.mkdir('logs')
+# file_handler = RotatingFileHandler('logs/yogurt.log', maxBytes=10240000,
+#                                    backupCount=10)
+# file_handler.setFormatter(logging.Formatter(
+#     '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+# file_handler.setLevel(logging.INFO)
+# app.logger.addHandler(file_handler)
+#
+# app.logger.setLevel(logging.INFO)
 
 
 def admin_required(func):
@@ -204,7 +204,7 @@ def current_period_finance():
             period_total.input_approved_by_admin = True
         db.session.add(period_total)
         db.session.commit()
-        app.logger.info(f'{user} {form.data}')
+        #app.logger.info(f'{user} {period_total} {form.data}')
         flash(f'Изпратихте формата успешно')
 
     return render_template('current_period_finance.html', user=user,
@@ -236,7 +236,7 @@ def current_period_product(product):
 
         if AUTO_APPROVE_RESULTS:
             userinput.approved_by_admin = True
-        app.logger.info(f'{user} {form.data}')
+        #app.logger.info(f'{user} {userinput} {form.data}')
         db.session.add(userinput)
         db.session.commit()
         flash(f'Successfully submitted form!')
@@ -778,9 +778,10 @@ def _calculate_period_results(game) -> None:
 
             if producing_at_least_one_product:
                 interest_costs = (player_input.produce_quantity /
-                                  (current_player_period.total_production_quantity or 1)) * total_interest_costs
+                                  (current_player_period.total_production_quantity or 1)) * current_player_period.total_interest_costs
+
             else:
-                interest_costs = total_interest_costs / 3
+                interest_costs = current_player_period.total_interest_costs / 3
 
             current_prod_period.interest_costs = interest_costs
 
