@@ -2,6 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
     {% if previous_period_total %}
+        <h1>Период {{new_period_total.period_number}}</h1>
         <table class="table table-striped table-hover" id="meow">
             <thead>
               <tr>
@@ -147,8 +148,8 @@
               </tr>
           </thead>
                 <tr>
-                    <td>Изплатен кредит/ направен депозит</td>
-                    <td>{{new_period_total.take_credit}}</td>
+                    <td>Изплатен кредит/ направен депозит за период {{previous_period_total.period_number}}</td>
+                    <td>{{previous_period_total.take_credit}}</td>
                 </tr>
                 <tr>
                     <td>Разполагаеми средства</td>

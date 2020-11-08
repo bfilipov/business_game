@@ -1,6 +1,9 @@
 from functools import wraps
 import math
 import random
+from logging.handlers import RotatingFileHandler
+import logging
+import os
 
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user, login_required
@@ -18,6 +21,21 @@ AUTO_APPROVE_RESULTS = True
 AUTO_CONFIRM_PERIOD = True
 DEFAULT_START_PRODUCTION = 0
 INITIAL_CREDIT = 30000
+
+# if not app.debug:
+
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+file_handler = RotatingFileHandler('logs/yogurt.log', maxBytes=10240,
+                                   backupCount=10)
+file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+file_handler.setLevel(logging.INFO)
+app.logger.addHandler(file_handler)
+
+app.logger.setLevel(logging.INFO)
+app.logger.info('Yogurt startup')
+
 
 
 def admin_required(func):
@@ -188,6 +206,7 @@ def current_period_finance():
             period_total.input_approved_by_admin = True
         db.session.add(period_total)
         db.session.commit()
+        app.logger.info(f'{user} {form.data}')
         flash(f'Изпратихте формата успешно')
 
     return render_template('current_period_finance.html', user=user,
@@ -219,7 +238,7 @@ def current_period_product(product):
 
         if AUTO_APPROVE_RESULTS:
             userinput.approved_by_admin = True
-
+        app.logger.info(f'{user} {form.data}')
         db.session.add(userinput)
         db.session.commit()
         flash(f'Successfully submitted form!')
@@ -239,8 +258,9 @@ def view_ot4et(user, period):
     # todo: sanitize <period>, currently only admin can see this endpoint
     period = int(period)
 
+    old_period_id = f'{game.id}_{user.id}_{period-1}'
     period_id = f'{game.id}_{user.id}_{period}'
-    previous_period_total = {} if int(period) < 2 else PeriodTotal.query.filter_by(id=period_id).first_or_404()
+    previous_period_total = {} if int(period) < 2 else PeriodTotal.query.filter_by(id=old_period_id).first_or_404()
     periods = Period.query.filter_by(game_id=game.id, user_id=user.id,
                                      period_number=period-1).all()
     new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{period}').first_or_404()
