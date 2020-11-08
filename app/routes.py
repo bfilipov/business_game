@@ -647,18 +647,27 @@ def _calculate_period_results(game) -> None:
     total_combined_score = 0
 
     for player in game.players:
+
+        total_administrative_costs = 0
+        total_production_quantity = 0
+
         # fill in available data for current period per player
         current_player_period = PeriodTotal.query.filter_by(
             id=f'{game.id}_{player.id}_{game.current_period}').first()
 
+        previous_player_period = PeriodTotal.query.filter_by(
+            id=f'{game.id}_{player.id}_{game.current_period-1}').first() or None
+
         scenario_period = ScenarioPerPeriod.query.filter_by(
                 demand_scenario_id=game.demand_scenario_id, period=game.current_period).first()
 
-        total_administrative_costs = 0
-        total_production_quantity = 0
-        total_interest_costs = ((current_player_period.credit_total * scenario_period.interest_credit)
-                                + (current_player_period.overdraft_total * scenario_period.interest_overdraft))
-        current_player_period.total_interest_costs = total_interest_costs
+        if previous_player_period:
+            total_interest_costs = ((previous_player_period.credit_total * scenario_period.interest_credit)
+                                    + (previous_player_period.overdraft_total * scenario_period.interest_overdraft))
+            current_player_period.total_interest_costs = total_interest_costs
+        else:
+            total_interest_costs = INITIAL_CREDIT * scenario_period.interest_credit
+            current_player_period.total_interest_costs = total_interest_costs
 
         producing_at_least_one_product = any(
             [i.produce_quantity for i in player.userinput.filter_by(period_number=game.current_period).all()])
