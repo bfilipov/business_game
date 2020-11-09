@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
     {% if previous_period_total %}
-        <h1>Период {{previous_period_total.period_number}}</h1>
+        <h2>Период {{previous_period_total.period_number}} Отбор {{user.username}}</h2>
         <table class="table table-striped table-hover" id="meow">
             <thead>
               <tr>

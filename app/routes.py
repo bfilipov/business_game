@@ -22,18 +22,16 @@ AUTO_CONFIRM_PERIOD = True
 DEFAULT_START_PRODUCTION = 0
 INITIAL_CREDIT = 30000
 
-# if not app.debug:
-
-# if not os.path.exists('logs'):
-#     os.mkdir('logs')
-# file_handler = RotatingFileHandler('logs/yogurt.log', maxBytes=10240000,
-#                                    backupCount=10)
-# file_handler.setFormatter(logging.Formatter(
-#     '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-# file_handler.setLevel(logging.INFO)
-# app.logger.addHandler(file_handler)
-#
-# app.logger.setLevel(logging.INFO)
+if not app.debug:
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    file_handler = RotatingFileHandler('logs/yogurt.log', maxBytes=10240000,
+                                       backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
 
 
 def admin_required(func):
@@ -80,17 +78,28 @@ def logout():
 
 @app.route('/results')
 @login_required
-def results():
+def list_results_current_user():
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first()
+    return render_template('results_list.html', game=game)
+
+
+@app.route('/results/period/<int:period>')
+@login_required
+def view_ot4et_user(period):
     user = current_user
     game = Game.query.filter_by(id=user.game_id).first()
 
-    period_id = f'{game.id}_{user.id}_{game.current_period-1}'
-    previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
-    periods = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
-                                     period_number=game.current_period - 1).all()
-    new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{game.current_period}').first()
+    period = int(period)
+
+    old_period_id = f'{game.id}_{user.id}_{period}'
+    previous_period_total = {} if int(period) < 1 else PeriodTotal.query.filter_by(id=old_period_id).first_or_404()
+    periods = Period.query.filter_by(game_id=game.id, user_id=user.id,
+                                     period_number=period).all()
+    new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{period+1}').first_or_404()
+
     return render_template('ot4et.html', periods=periods, previous_period_total=previous_period_total,
-                           new_period_total=new_period_total)
+                           new_period_total=new_period_total, user=user)
 
 
 @app.route('/marketing')
@@ -204,7 +213,7 @@ def current_period_finance():
             period_total.input_approved_by_admin = True
         db.session.add(period_total)
         db.session.commit()
-        #app.logger.info(f'{user} {period_total} {form.data}')
+        app.logger.info(f'{user} {period_total} {form.data}')
         flash(f'Изпратихте формата успешно')
 
     return render_template('current_period_finance.html', user=user,
@@ -236,7 +245,7 @@ def current_period_product(product):
 
         if AUTO_APPROVE_RESULTS:
             userinput.approved_by_admin = True
-        #app.logger.info(f'{user} {userinput} {form.data}')
+        app.logger.info(f'{user} {userinput} {form.data}')
         db.session.add(userinput)
         db.session.commit()
         flash(f'Successfully submitted form!')
@@ -246,25 +255,23 @@ def current_period_product(product):
 
 
 # ADMIN :
-@app.route('/admin/ot4et/user/<user>/period/<period>')
+@app.route('/admin/ot4et/user/<user>/period/<int:period>')
 @login_required
 @admin_required
 def view_ot4et(user, period):
     user = User.query.filter_by(id=user).first_or_404()
     game = Game.query.filter_by(id=user.game_id).first()
 
-    # todo: sanitize <period>, currently only admin can see this endpoint
     period = int(period)
 
-    old_period_id = f'{game.id}_{user.id}_{period-1}'
-    period_id = f'{game.id}_{user.id}_{period}'
-    previous_period_total = {} if int(period) < 2 else PeriodTotal.query.filter_by(id=old_period_id).first_or_404()
+    old_period_id = f'{game.id}_{user.id}_{period}'
+    previous_period_total = {} if int(period) < 1 else PeriodTotal.query.filter_by(id=old_period_id).first_or_404()
     periods = Period.query.filter_by(game_id=game.id, user_id=user.id,
-                                     period_number=period-1).all()
-    new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{period}').first_or_404()
+                                     period_number=period).all()
+    new_period_total = PeriodTotal.query.filter_by(id=f'{game.id}_{user.id}_{period+1}').first_or_404()
 
     return render_template('ot4et.html', periods=periods, previous_period_total=previous_period_total,
-                           new_period_total=new_period_total)
+                           new_period_total=new_period_total, user=user)
 
 
 @app.route('/confirm_current_period/game/<gameid>', methods=['GET', 'POST'])
