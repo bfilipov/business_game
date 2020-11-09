@@ -302,8 +302,6 @@ def confirm_current_period(gameid):
                     player.game_id = game.id
                     for product in products:
 
-
-
                         previous_period = player.periods.filter_by(
                             period_number=game.current_period-1, product_id=product.id).first()
 
@@ -666,9 +664,6 @@ def _calculate_period_results(game) -> None:
 
     for player in game.players:
 
-        total_administrative_costs = 0
-        total_production_quantity = 0
-
         # fill in available data for current period per player
         current_player_period = PeriodTotal.query.filter_by(
             id=f'{game.id}_{player.id}_{game.current_period}').first()
@@ -687,10 +682,21 @@ def _calculate_period_results(game) -> None:
             total_interest_costs = INITIAL_CREDIT * scenario_period.interest_credit
             current_player_period.total_interest_costs = total_interest_costs
 
-        producing_at_least_one_product = any(
-            [i.produce_quantity for i in player.userinput.filter_by(period_number=game.current_period).all()])
+        total_administrative_costs = 0
+        total_production_quantity = 0
+        producing_at_least_one_product = False
 
-        for player_input in player.userinput.filter_by(period_number=game.current_period).all():
+        player_inputs = player.userinput.filter_by(period_number=game.current_period).all()
+        for player_input in player_inputs:
+            total_production_quantity += player_input.produce_quantity
+            if player_input.produce_quantity:
+                producing_at_least_one_product = True
+
+        current_player_period.total_production_quantity = total_production_quantity
+        db.session.add(current_player_period)
+        db.session.commit()
+
+        for player_input in player_inputs:
 
             rand = random.random()
 
@@ -738,8 +744,6 @@ def _calculate_period_results(game) -> None:
             current_prod_period.userinput_id = player_input.id
             current_prod_period.random_value = rand
 
-            total_production_quantity += player_input.produce_quantity
-
             # Q&M indexes
             current_prod_period.index_marketing = marketing_index
             current_prod_period.index_quality = quality_index
@@ -779,10 +783,8 @@ def _calculate_period_results(game) -> None:
             if producing_at_least_one_product:
                 interest_costs = (player_input.produce_quantity /
                                   (current_player_period.total_production_quantity or 1)) * current_player_period.total_interest_costs
-
             else:
                 interest_costs = current_player_period.total_interest_costs / 3
-
             current_prod_period.interest_costs = interest_costs
 
             # administrative costs
