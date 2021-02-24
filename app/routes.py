@@ -270,7 +270,7 @@ def _check_for_unconfirmed(periods):
                     all_confirmed = False
                     flash(f'{p} not confirmed by admin.')
             if hasattr(p, 'input_approved_by_admin'):
-                if not p.confirmed_by_admin:
+                if not p.input_approved_by_admin:
                     all_confirmed = False
                     flash(f'{p} not confirmed by admin.')
     return all_confirmed
