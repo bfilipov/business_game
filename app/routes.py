@@ -261,6 +261,21 @@ def view_ot4et(user, period):
                            new_period_total=new_period_total, user=user)
 
 
+def _check_for_unconfirmed(periods):
+    all_confirmed = True
+    if periods:
+        for p in periods:
+            if p.hasattr('confirmed_by_admin'):
+                if not p.confirmed_by_admin:
+                    all_confirmed = False
+                    flash(f'{p} not confirmed by admin.')
+            if p.hasattr('input_approved_by_admin'):
+                if not p.confirmed_by_admin:
+                    all_confirmed = False
+                    flash(f'{p} not confirmed by admin.')
+    return all_confirmed
+
+
 @app.route('/confirm_current_period/game/<gameid>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -279,8 +294,8 @@ def confirm_current_period(gameid):
                       for period_total in player.period_total.filter_by(period_number=game.current_period).all()]
 
     form = None
-    all_confirmed = (periods and all([p.confirmed_by_admin for p in periods])) \
-        and (periods_totals and all([pt.input_approved_by_admin for pt in periods_totals]))
+
+    all_confirmed = _check_for_unconfirmed(periods) and _check_for_unconfirmed(periods_totals)
 
     if not all_confirmed:
         flash('There are unconfirmed user inputs.')
@@ -985,4 +1000,3 @@ def get_game(players_limit_per_game=PLAYERS_PER_GAME):
 
 def create_game(scenario_id):
     return Game(demand_scenario_id=scenario_id)
-
