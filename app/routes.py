@@ -104,53 +104,39 @@ def view_ot4et_user(period):
 
 @app.route('/marketing')
 @login_required
-def marketing():
+def marketing_list():
+    user = current_user
+    game = Game.query.filter_by(id=user.game_id).first_or_404()
+
+    return render_template('marketing_list.html', game=game)
+
+
+@app.route('/marketing/period/<int:period>')
+@login_required
+def marketing(period):
     user = current_user
     game = Game.query.filter_by(id=user.game_id).first_or_404()
     players = game.players.all()
     products = Product.query.all()
-    # period_totals = [period
-    #            for player in players
-    #            for period in player.periods.all()]
 
-    period_id = f'{game.id}_{user.id}_{game.current_period-1}'
-    previous_period_total = None if game.current_period < 2 else PeriodTotal.query.filter_by(id=period_id).first()
-    # previous_period_products = [None] if game.current_period < 2 else \
-    #     Period.query.filter_by(game_id=user.game_id, period_number=game.current_period-1).all()
+    period = int(period)
+
+    period_id = f'{game.id}_{user.id}_{period}'
+    previous_period_total = None if game.current_period < 1 else PeriodTotal.query.filter_by(id=period_id).first_or_404()
+
+    show = {}
     if previous_period_total:
-        period_prod_1 = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
-                                               period_number=game.current_period - 1, product_id=1).first()
-
-        period_prod_2 = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
-                                               period_number=game.current_period - 1, product_id=2).first()
-
-        period_prod_3 = Period.query.filter_by(game_id=user.game_id, user_id=user.id,
-                                               period_number=game.current_period - 1, product_id=3).first()
-
-        show = {
-            'price1': period_prod_1.research_price,
-            'price2': period_prod_2.research_price,
-            'price3': period_prod_3.research_price,
-
-            'marketing1': period_prod_1.research_marketing,
-            'marketing2': period_prod_2.research_marketing,
-            'marketing3': period_prod_3.research_marketing,
-
-            'quality1': period_prod_1.research_quality,
-            'quality2': period_prod_2.research_quality,
-            'quality3': period_prod_3.research_quality,
-
-            'sales1': period_prod_1.research_sales,
-            'sales2': period_prod_2.research_sales,
-            'sales3': period_prod_3.research_sales,
-        }
-
-    else:
-        show = {}
+        products = Product.query.all()
+        for i in range(1, len(products)+1):
+            period_prod = Period.query.filter_by(id=f'{period_id}_{i}').first()
+            show.update({
+                f'price{i}': period_prod.research_price,
+                f'marketing{i}': period_prod.research_marketing,
+                f'quality{i}': period_prod.research_quality,
+                f'sales{i}': period_prod.research_sales})
 
     return render_template('marketing.html', user=user, players=players,
                            previous_period_total=previous_period_total, products=products, show=show)
-
 
 # @app.route('/gameplay')
 # def gameplay():
@@ -165,6 +151,7 @@ def marketing():
 # def user(username):
 #     user = User.query.filter_by(username=username).first_or_404()
 #     return render_template('user.html', user=user)
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
