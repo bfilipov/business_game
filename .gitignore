@@ -130,6 +130,9 @@ dmypy.json
 
 # idea config
 .idea/
+
+# project specific
+boot.sh
 backup/
 logs/
 migrations/versions/
