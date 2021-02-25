@@ -135,12 +135,15 @@ class ScenarioPerPeriodForm(FlaskForm):
     marketing_index_min = FloatField('мин индекс маркетинг', validators=[])  # макс индекси
     marketing_index_max = FloatField('макс индекс маркетинг', validators=[])  # мин индекс качество
 
-    marketing_keep_effect = FloatField('запазващ се ефект индекс маркетинг', validators=[])  # запазващ се ефект индекс маркетинг
-    base_value_rand_quality = FloatField('# базова ст-ат за Rand на качество', validators=[])  # базова ст-ат за Rand на качество
+    marketing_keep_effect = FloatField('запазващ се ефект индекс маркетинг', validators=[])
+    # запазващ се ефект индекс маркетинг
+    base_value_rand_quality = FloatField('# базова ст-ат за Rand на качество', validators=[])
+    # базова ст-ат за Rand на качество
 
     cost_transport = FloatField('транспортни разходи', validators=[])  # транспортни разходи
     cost_storage = FloatField('складови разходи', validators=[])  # складови разходи
-    # cost_fixed_administrative = IntegerField('фиксирани административни разходи', validators=[])  # фиксирани административни разходи
+    # cost_fixed_administrative = IntegerField('фиксирани административни разходи', validators=[])
+    # фиксирани административни разходи
     cost_product_manager = IntegerField('продуктов мениджър', validators=[])  # продуктов мениджър
     cost_new_product_manager = IntegerField('нов продуктов мениджър', validators=[])  # нов продуктов мениджър
 
@@ -190,9 +193,10 @@ class ReviewPeriodForm(FlaskForm):
     research_sales = IntegerField('research_sales', validators=[])
     index_marketing = FloatField('index_marketing', validators=[])
     index_quality = FloatField('index_quality', validators=[])
-    consolidated_rnd_budget = FloatField('чувствителност цена',
+    consolidated_rnd_budget = FloatField('натрупан бюджет за R & D',
                                          validators=[])  # натрупан бюджет за R & D // Инвестиция в R & D - натруп
-    consolidated_marketing_budget = FloatField('чувствителност цена', validators=[])  # натрупан бюджет за маркетинг
+    consolidated_marketing_budget = FloatField('натрупан бюджет за маркетинг',
+                                               validators=[])  # натрупан бюджет за маркетинг
     total_costs = FloatField('пълна себестойност - (произвпдствени + непроизводствени)',
                              validators=[])  # пълна себестойност - (произвпдствени + непроизводствени)
     total_costs_per_one = FloatField('пълна себестойност за брой', validators=[])  # пълна себестойност за брой
