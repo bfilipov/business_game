@@ -431,10 +431,11 @@ def calculate_period_results():
             for prod_id in [1, 2, 3]:  # handcoded products
                 period_id = f'{game.id}_{player.id}_{game.current_period}_{prod_id}'
 
-                userinput = get_or_create(db.session, Userinput, id=f'{period_id}',
-                                          user_id=player.id,
-                                          product_id=prod_id,
-                                          period_number=game.current_period)
+                userinput = get_or_create(db.session, Userinput, id=f'{period_id}')
+                userinput.game_id = game.id
+                userinput.user_id = player.id
+                userinput.product_id = prod_id
+                userinput.period_number = game.current_period
 
                 userinput.approved_by_admin = AUTO_CONFIRM_PERIOD
                 game_inputs.append(userinput)
