@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-
 {% block app_content %}
-
     {% if current_user.is_admin %}
-
+        <!--Admin view-->
         <h3>Review data for <strong>Game: {{user.game_id}}</strong></h3>
         <p><a href="/confirm_finance/game/{{user.game_id}}/user/{{user.id}}">
                Потвърди финансови данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}</a></p>
@@ -14,7 +12,6 @@
             <strong>User: {{user.id}}</strong>
             <strong>Period:{{period.period_number}}</strong>
             <strong>Product:{{period.product_id}}</strong>
-
             <p><a href="/game/{{user.game_id}}/user/{{user.id}}/product/{{period.product_id}}">
                Потвърди входни данни за - Игра ID:{{user.game_id}} Ирач:{{user.username}} {{user.display_name}}
                 Продукт: {{period.product_id}}</a></p>
@@ -23,21 +20,30 @@
                 Продукт: {{period.product_id}}
             </a></p>
         {% endfor %}
+        <!--Admin view-->
     {% else %}
-        <p>Отбор: {{user.display_name}}</p>
-        <p>Разполагаеми средства: {{period_total.money_total_begining_of_period}}</p>
-        <p>Кредит: {{period_total.credit_total}}</p>
-        <p>Овърдрафт: {{period_total.overdraft_total}}</p>
+        <!--User view-->
+        <p>Team: {{user.display_name}}</p>
+        <p>Available funds: {{period_total.money_total_begining_of_period}}</p>
+        <p>Credit: {{period_total.credit_total}}</p>
+        <p>Overdraft: {{period_total.overdraft_total}}</p>
         <hr>
-        <h4>Данни за период: {{period_total.period_number}}</h4>
+        <h4>Period: {{period_total.period_number}}</h4>
         <hr>
         {% for product in products%}
-            <p><a href="/current_period/{{product.id}}">
-                Въведете данни за продукт: {{product.name}}</a></p>
+            <p>
+                <a href="/current_period/{{product.id}}" type="button" class="btn btn-lg btn-light">
+                    Enter data for product: {{product.name}}
+                </a>
+            </p>
         {% endfor %}
-        <p><a href="/current_period/finance">
-            Въведете финансови данни</a></p>
+        <p>
+            <a href="/current_period/finance" type="button" class="btn btn-lg btn-light">
+                Enter financial data
+            </a>
+        </p>
         <hr>
+        <!--User view-->
     {% endif %}
 
 {% endblock %}

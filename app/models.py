@@ -326,4 +326,3 @@ class ScenarioPerProduct(db.Model):
     #                'interest_credit, interest_overdraft) '
     #                f'VALUES (default, 1, {period}, 5000, 0.05, 0.1);')
     # # ### end Alembic commands ###
-

@@ -51,20 +51,20 @@ class RegistrationForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
-    display_name = StringField('Име на отбора', validators=[DataRequired()])
+    display_name = StringField('Team name', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
-    member1 = StringField('Студент 1', validators=[DataRequired()])
-    member2 = StringField('Студент 2')
-    member3 = StringField('Студент 3')
-    member4 = StringField('Студент 4')
-    member5 = StringField('Студент 5')
-    member6 = StringField('Студент 6')
-    member7 = StringField('Студент 7')
-    member8 = StringField('Студент 8')
-    member9 = StringField('Студент 9')
-    member10 = StringField('Студент 10')
+    member1 = StringField('Student 1', validators=[DataRequired()])
+    member2 = StringField('Student 2')
+    member3 = StringField('Student 3')
+    member4 = StringField('Student 4')
+    member5 = StringField('Student 5')
+    member6 = StringField('Student 6')
+    member7 = StringField('Student 7')
+    member8 = StringField('Student 8')
+    member9 = StringField('Student 9')
+    member10 = StringField('Student 10')
 
-    submit = SubmitField('Изпрати')
+    submit = SubmitField('Submit')
 
     def validate_display_name(self, display_name):
         match = User.query.filter_by(display_name=display_name.data).first()
@@ -81,35 +81,39 @@ class EditProfileForm(FlaskForm):
 
 class UserInputForm(FlaskForm):
 
-    produce_quantity = IntegerField('Производство', validators=[NumberRange(min=0, max=2000)])  # production
-    sell_price = IntegerField('Цена', validators=[NumberRange(min=10, max=50)])  # production  # price
-    marketing_costs = IntegerField('Бюджет за маркетинг', validators=[NumberRange(min=0, max=5000)])  # production  # marketing budget
-    research_and_development_costs = IntegerField('R & D', validators=[NumberRange(min=0, max=5000)])  # production  # R & D
+    produce_quantity = IntegerField('Production / Производство', validators=[NumberRange(min=0, max=2000)])  # production
+    sell_price = IntegerField('Price / Цена', validators=[NumberRange(min=10, max=50)])  # production  # price
+    marketing_costs = IntegerField('Marketing budget / Бюджет за маркетинг', validators=[NumberRange(min=0, max=5000)])  # production  # marketing budget
+    research_and_development_costs = IntegerField('R & D / Бюджет за развойна дейност', validators=[NumberRange(min=0, max=5000)])  # production  # R & D
 
-    marketing_research_price = BooleanField('Проучване на цени', validators=[])  # production  # проучване на цени
-    marketing_research_sales = BooleanField('Проучване на продажби', validators=[])  # production  # проучване на продажби
-    marketing_research_quality = BooleanField('Проучване на качество', validators=[])  # production  # проучване на качество
-    marketing_research_marketing_costs = BooleanField('Проучване на разходи за маркетинг', validators=[])  # production  # проучване на разходи за маркетинг
+    marketing_research_price = BooleanField('Price research / Проучване на цени',
+                                            validators=[])  # production  # проучване на цени
+    marketing_research_sales = BooleanField('Sales research / Проучване на продажби',
+                                            validators=[])  # production  # проучване на продажби
+    marketing_research_quality = BooleanField('Quality research / Проучване на качество',
+                                              validators=[])  # production  # проучване на качество
+    marketing_research_marketing_costs = BooleanField('Marketing costs research / Проучване на разходи за маркетинг',
+                                                      validators=[])  # production  # проучване на разходи за маркетинг
 
-    submit = SubmitField('Изпращане')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class UserInputPeriodTotal(FlaskForm):
     # deposit_credit = IntegerField('Депозирай по кредит/депозит', validators=[NumberRange(min=0, max=10000)])
-    deposit_overdraft = IntegerField('Депозирай по овердрафт', validators=[NumberRange(min=0, max=10000)])
-    take_credit = IntegerField('Изтегли кредит/ Депозирай по сметка', validators=[NumberRange(min=-30000, max=30000)])
+    deposit_overdraft = IntegerField('Deposit overdraft / Депозирай по овердрафт', validators=[NumberRange(min=0, max=10000)])
+    take_credit = IntegerField('Take credit or make a deposit / Изтегли кредит или депозирай по сметка', validators=[NumberRange(min=-30000, max=30000)])
 
-    submit = SubmitField('Изпращане')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class ReviewUserInputPeriodTotal(UserInputPeriodTotal):
     input_approved_by_admin = BooleanField('Approved')
-    submit = SubmitField('Изпращане')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class ReviewUserInputForm(UserInputForm):
     approved_by_admin = BooleanField('Approved', validators=[])
-    submit = SubmitField('Submit')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class ScenarioPerPeriodForm(FlaskForm):
@@ -153,8 +157,7 @@ class ScenarioPerPeriodForm(FlaskForm):
     # interest_credit = FloatField('лихвен процент кредит', validators=[])  # лихвен процент кредит
     # interest_overdraft = FloatField('лихвен процент овърдрафт', validators=[])  # лихвен процент овърдрафт
     max_price = FloatField('макс цена', validators=[])  # макс цена
-
-    submit = SubmitField('Submit')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class ScenarioPerProductForm(FlaskForm):
@@ -214,16 +217,15 @@ class ReviewPeriodForm(FlaskForm):
     secondary_sells = IntegerField('secondary_sells', validators=[])
     total_sells = IntegerField('total_sells / Продажби (идват от пазара)', validators=[])
     random_value = FloatField('random_value', validators=[])
-
-    submit = SubmitField('Submit')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class ConfirmCurrentPeriodResultsForm(FlaskForm):
     approved = BooleanField('Approved?')
-    submit = SubmitField('Submit')
+    submit = SubmitField('Submit / Изпращане')
 
 
 class DoubleConfirmForm(FlaskForm):
     approved = BooleanField('Go back one period?')
     approved2 = BooleanField('Really?')
-    submit = SubmitField('Submit')
+    submit = SubmitField('Submit / Изпращане')

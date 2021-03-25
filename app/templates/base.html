@@ -30,11 +30,11 @@
                         <li><a href="{{ url_for('register') }}">Register New User</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('current_period') }}">Настоящ период</a></li>
-                        <li><a href="{{ url_for('user') }}">Профил</a></li>
-                        <li><a href="{{ url_for('marketing_list') }}">Маркетинг</a></li>
-                        <li><a href="{{ url_for('list_results_current_user') }}">Отчет</a></li>
-                        <li><a href="{{ url_for('logout') }}">Изход</a></li>
+                        <li><a href="{{ url_for('current_period') }}">Current period</a></li>
+                        <li><a href="{{ url_for('user') }}">Profile</a></li>
+                        <li><a href="{{ url_for('marketing_list') }}">Marketing</a></li>
+                        <li><a href="{{ url_for('list_results_current_user') }}">Report</a></li>
+                        <li><a href="{{ url_for('logout') }}">Log out</a></li>
                     {% endif %}
                 </ul>
             </div>

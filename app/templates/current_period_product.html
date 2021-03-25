@@ -10,17 +10,17 @@
             <strong>Period:{{period.period_number}}</strong>
             <strong>Продукт:{{product.name}}</strong></h3>
     {% else %}
-        <p>Отбор: {{user.display_name}}</p>
-        <p>Разполагаеми средства: {{period_total.money_total_begining_of_period}}</p>
-        <p>Кредит: {{period_total.credit_total}}</p>
-        <p>Овърдрафт: {{period_total.overdraft_total}}</p>
+        <p>Team: {{user.display_name}}</p>
+        <p>Available funds: {{period_total.money_total_begining_of_period}}</p>
+        <p>Credit: {{period_total.credit_total}}</p>
+        <p>Overdraft: {{period_total.overdraft_total}}</p>
         <hr>
-        <h4>Данни за период: {{period_total.period_number}}</h4>
+        <h4>Period: {{period_total.period_number}}</h4>
     {% endif %}
     <hr>
-    <h4>Данни за продукт: {{product.name}}</h4>
+    <h4>Data for product: {{product.name}}</h4>
     <hr>
-    <p>Наличност на склад: {{period.products_in_stock_beginning_of_period}}</p>
+    <p>Stock availability: {{period.products_in_stock_beginning_of_period}}</p>
     <hr>
     <div class="row">
         <div class="col-md-4">

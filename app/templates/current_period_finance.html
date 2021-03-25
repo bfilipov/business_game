@@ -10,12 +10,12 @@
             <strong>Period:{{period_total.period_number}}</strong>
 
     {% else %}
-        <p>Отбор: {{user.display_name}}</p>
-        <p>Разполагаеми средства: {{period_total.money_total_begining_of_period}}</p>
-        <p>Кредит: {{period_total.credit_total}}</p>
-        <p>Овърдрафт: {{period_total.overdraft_total}}</p>
+        <p>Team: {{user.display_name}}</p>
+        <p>Available funds: {{period_total.money_total_begining_of_period}}</p>
+        <p>Credit: {{period_total.credit_total}}</p>
+        <p>Overdraft: {{period_total.overdraft_total}}</p>
         <hr>
-        <h4>Данни за период: {{period_total.period_number}}</h4>
+        <h4>Period: {{period_total.period_number}}</h4>
     {% endif %}
     <hr>
 
